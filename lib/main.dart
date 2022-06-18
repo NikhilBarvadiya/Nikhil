@@ -8,13 +8,13 @@ import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/core/theme/index.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 Future<void> main() async {
   // WidgetsFlutterBinding.ensureInitialized();
   // await FirebaseNotificationService.init();
   // FirebaseNotificationService().requestPermissions();
   await GetStorage.init();
+
   Get.put(CommonController());
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
@@ -23,12 +23,7 @@ Future<void> main() async {
     ),
   );
   Get.put(AppController());
-  await SentryFlutter.init(
-        (options) {
-      options.dsn = 'https://86b9c7af4e9a474db9803c4205d72123@o1089444.ingest.sentry.io/6104561';
-    },
-    appRunner: () => runApp(const MyApp()),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
