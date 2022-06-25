@@ -1,0 +1,1 @@
+import 'package:get/get.dart';class EditOrdersController extends GetxController{  bool isSlider = true;}
