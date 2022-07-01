@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, empty_catches, prefer_typing_uninitialized_variables, unnecessary_null_comparison, unused_local_variable, equal_keys_in_map
+// ignore_for_file: unused_local_variable, unnecessary_null_comparison, equal_keys_in_map
 
 import 'package:flutter/material.dart';
 import 'package:fw_manager/common/config.dart';
@@ -131,7 +131,6 @@ class MultiOrdersController extends GetxController {
     if (order[1]['isActive'] == true) {
       fatchB2CVendor("");
     }
-    print(isBusinessSelected);
     if (isBusinessSelected != "") {
       onOpenOrder();
       Get.back();
@@ -197,7 +196,6 @@ class MultiOrdersController extends GetxController {
   String isPickupSelected = "";
 
   onPickupItemsList(String id, String name) async {
-    print(id);
     if (id != "") {
       isPickupSelectedId = id;
       isPickupSelected = name;
@@ -278,7 +276,9 @@ class MultiOrdersController extends GetxController {
       }
       update();
       return vehiclesNames;
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
   }
 
   dynamic driversByVehicleName;
@@ -325,14 +325,15 @@ class MultiOrdersController extends GetxController {
       }
       update();
       return driversByVehicleName;
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
   }
 
   onMerge() {
     List selectedIds = [];
     List selectedOrderStatusIds = [];
     List location = [];
-    print("Start Merging");
     for (var e in selectedOrderTrueList) {
       e["vendorOrderId"] == null ? selectedIds.add(e["vendorOrderId"]) : selectedIds.add(e["vendorOrderId"]["_id"]);
       selectedOrderStatusIds.add(e['_id']);
@@ -365,7 +366,7 @@ class MultiOrdersController extends GetxController {
         var locIndex = location.indexOf(data[0]);
         location[locIndex]['itemList'].add(item);
       } else {
-        var loc;
+        dynamic loc;
         if (e['addressId'] != null) {
           loc = {
             ...e['addressId'],
@@ -373,10 +374,9 @@ class MultiOrdersController extends GetxController {
             "vendorAnyNote": e['anyNote'] ?? '',
           };
         } else {
-          print(e);
           var splitLatLong = e['latLong'].split(',');
           loc = {
-            "address": e['flatFloorBuilding'] + e['address'],
+            "address": "${e['flatFloorBuilding']}${e['address']}",
             "businessCategoryId": e['businessCategoryId'],
             "flatFloorBuilding": '',
             "isDeleted": false,
@@ -395,9 +395,6 @@ class MultiOrdersController extends GetxController {
       }
     }
     selectedLocations = location;
-    print("Results");
-    print(selectedLocations);
-    print(pickupItemsList);
     if (selectedLocations.isNotEmpty) {
       Get.toNamed(AppRoutes.merge);
     }
@@ -405,7 +402,6 @@ class MultiOrdersController extends GetxController {
   }
 
   onPlacingOrderClicked() {
-    print(selectedPickupPoint);
     if (selectedPickupPoint != null && isVehiclesSelected != '' && isVehiclesSelected != null) {
       selectedLocations.insert(0, selectedPickupPoint);
       selectedLocations[0]['itemList'] = pickupItemsList;
@@ -419,6 +415,22 @@ class MultiOrdersController extends GetxController {
       );
     }
   }
+
+  //  onB2CPlacingOrderClicked() {
+  //   print(selectedPickupPoint);
+  //   if (selectedPickupPoint != null && isVehiclesSelected != '' && isVehiclesSelected != null) {
+  //     selectedB2CLocations.insert(0, selectedPickupPoint);
+  //     selectedB2CLocations[0]['itemList'] = pickupB2CItemsList;
+  //     onPlacingOrder(selectedB2CLocations);
+  //   } else {
+  //     Get.snackbar(
+  //       "* Fields are Mandatory",
+  //       "Info",
+  //       backgroundColor: Colors.white,
+  //       colorText: Colors.black,
+  //     );
+  //   }
+  // }
 
   onPlacingOrder(List selectedLocation) async {
     bool orderPreview = true;
@@ -551,7 +563,6 @@ class MultiOrdersController extends GetxController {
         ordersData["drop"] = orders['locations'][i];
       }
     }
-    print(ordersData);
     try {
       var resData = await apis.call(
         apiMethods.calculateOrder,
@@ -579,7 +590,6 @@ class MultiOrdersController extends GetxController {
         finalOrder = orders;
         saveOrders();
       }
-      print("finalOrder==============$finalOrder");
     } catch (e) {
       return null;
     }
@@ -607,7 +617,6 @@ class MultiOrdersController extends GetxController {
     List selectedIds = [];
     List selectedOrderStatusIds = [];
     List location = [];
-    print("Start Merging");
     for (var e in selectedB2COrderTrueList) {
       e["vendorOrderId"] == null ? selectedIds.add(e["vendorOrderId"]) : selectedIds.add(e["vendorOrderId"]["_id"]);
       selectedOrderStatusIds.add(e['_id']);
@@ -640,7 +649,7 @@ class MultiOrdersController extends GetxController {
         var locIndex = location.indexOf(data[0]);
         location[locIndex]['itemList'].add(item);
       } else {
-        var loc;
+        dynamic loc;
         if (e['addressId'] != null) {
           loc = {
             ...e['addressId'],
@@ -648,10 +657,9 @@ class MultiOrdersController extends GetxController {
             "vendorAnyNote": e['anyNote'] ?? '',
           };
         } else {
-          print(e);
           var splitLatLong = e['latLong'].split(',');
           loc = {
-            "address": e['flatFloorBuilding'] + e['address'],
+            "address": "${e['flatFloorBuilding']}${e['address']}",
             "businessCategoryId": e['businessCategoryId'],
             "flatFloorBuilding": '',
             "isDeleted": false,
@@ -668,12 +676,8 @@ class MultiOrdersController extends GetxController {
         }
         location.add(loc);
       }
-      print("Results");
     }
     selectedB2CLocations = location;
-    print("Results");
-    print(selectedB2CLocations);
-    print(pickupB2CItemsList);
     if (selectedB2CLocations.isNotEmpty) {
       Get.toNamed(AppRoutes.merge);
     }
@@ -703,7 +707,9 @@ class MultiOrdersController extends GetxController {
           isBusinessSelected = element['title'];
         }
       });
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
     update();
   }
 
@@ -725,7 +731,9 @@ class MultiOrdersController extends GetxController {
       if (resData.isSuccess == true && resData.data != 0) {
         getVendorsList = resData.data;
       }
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
     update();
   }
 
@@ -748,8 +756,9 @@ class MultiOrdersController extends GetxController {
           isAreaSelected = element['name'];
         }
       });
-      print("isAreaSelectedId===>$isAreaSelectedId");
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
     update();
   }
 
@@ -770,7 +779,9 @@ class MultiOrdersController extends GetxController {
       if (resData.isSuccess == true && resData.data != 0) {
         routeList = resData.data;
       }
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
     update();
   }
 
@@ -793,7 +804,9 @@ class MultiOrdersController extends GetxController {
       if (resData.isSuccess == true && resData.data != 0) {
         vendorOrdersList = resData.data;
       }
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
     update();
   }
 
@@ -872,7 +885,9 @@ class MultiOrdersController extends GetxController {
       if (resData.isSuccess == true && resData.data != 0) {
         getB2CVendorsList = resData.data;
       }
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
     update();
   }
 
@@ -912,7 +927,9 @@ class MultiOrdersController extends GetxController {
       if (resData.isSuccess == true && resData.data != 0) {
         b2cRouteList = resData.data;
       }
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
     update();
   }
 
@@ -951,8 +968,9 @@ class MultiOrdersController extends GetxController {
       if (resData.isSuccess == true && resData.data != 0) {
         vendorB2COrdersList = resData.data;
       }
-      print("vendorB2COrdersList=====>$vendorB2COrdersList");
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
     update();
   }
 

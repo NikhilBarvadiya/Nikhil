@@ -41,7 +41,7 @@ class HomeController extends GetxController {
       "screen": MultiOrdersScreen(),
     },
     {
-      "pageName": "Vendor Settlement",
+      "pageName": "Return Settlement",
       "icon": FontAwesomeIcons.rightLeft,
       "screen": VendorSettlementScreen(),
     },
