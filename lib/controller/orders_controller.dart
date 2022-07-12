@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:fw_manager/common/config.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
@@ -10,6 +12,10 @@ class OrdersController extends GetxController {
   bool isdragDrop = false;
   bool ordersFilter = true;
   bool isSlider = true;
+  List selectedOrderList = [];
+  List isCountsList = [];
+  String startDateVendor = "";
+  String endDateVendor = "";
   List filters = [
     {
       "icon": Icons.pending_actions,
@@ -33,27 +39,27 @@ class OrdersController extends GetxController {
     }
   ];
 
-  List<dynamic> selectedOrders = [
-    for (int i = 1; i < 11; i++)
-      {
-        "orderNo": "#ORD-00507$i",
-        "orderDateTime": "Jun 10, 2022, 10:19:52 AM",
-        "customerName": "Fastwhistle : ",
-        "customerNumber": " +91 6357017016",
-        "pickupStop": "5 Stops",
-        "amount": "₹253",
-        "amountType": i == 0
-            ? "C"
-            : i == 2
-                ? "W"
-                : i == 5
-                    ? "R"
-                    : "C",
-        "status": " Pending",
-        "requestedVehicle": "CHAUHAN RAHUL KANAHAIYA",
-        "_id": i,
-      },
-  ];
+  // List<dynamic> selectedOrders = [
+  //   for (int i = 1; i < 11; i++)
+  //     {
+  //       "orderNo": "#ORD-00507$i",
+  //       "orderDateTime": "Jun 10, 2022, 10:19:52 AM",
+  //       "customerName": "Fastwhistle : ",
+  //       "customerNumber": " +91 6357017016",
+  //       "pickupStop": "5 Stops",
+  //       "amount": "₹253",
+  //       "amountType": i == 0
+  //           ? "C"
+  //           : i == 2
+  //               ? "W"
+  //               : i == 5
+  //                   ? "R"
+  //                   : "C",
+  //       "status": " Pending",
+  //       "requestedVehicle": "CHAUHAN RAHUL KANAHAIYA",
+  //       "_id": i,
+  //     },
+  // ];
 
   List<dynamic> orderList = [
     for (int i = 0; i < 11; i++)
@@ -96,16 +102,16 @@ class OrdersController extends GetxController {
 
   @override
   void onInit() {
-    fatchOrders("");
+    fatchOrders("Pending");
     super.onInit();
   }
 
-  onChange(int i) {
+  onChange(int i) async {
     for (int a = 0; a < filters.length; a++) {
       if (a == i) {
         filters[a]["isActive"] = true;
         selectedFilter = filters[a]["label"];
-        fatchOrders(filters[i]["label"]);
+        await fatchOrders(filters[i]["label"]);
       } else {
         filters[a]["isActive"] = false;
       }
@@ -120,7 +126,6 @@ class OrdersController extends GetxController {
         startDateVendor = "";
         endDateVendor = "";
         update();
-        // selectedOrders.addAll(selectedOrders[0]);
       },
     );
   }
@@ -135,6 +140,7 @@ class OrdersController extends GetxController {
   }
 
   onBack() {
+    isdragDrop = false;
     Get.back();
     isdragDrop = !isdragDrop;
     update();
@@ -183,8 +189,6 @@ class OrdersController extends GetxController {
     );
   }
 
-  List selectedOrderList = [];
-
   fatchOrders(type) async {
     try {
       var resData = await apis.call(
@@ -203,9 +207,8 @@ class OrdersController extends GetxController {
       if (resData.isSuccess == true && resData.data != 0) {
         selectedOrderList = resData.data["orders"]["docs"];
       }
-      return selectedOrderList;
     } catch (e) {
-      return null;
+      log("Error orders not faound");
     }
   }
 
@@ -214,9 +217,6 @@ class OrdersController extends GetxController {
     update();
     await dateVendorTimeRangePicker(Get.context!);
   }
-
-  String startDateVendor = "";
-  String endDateVendor = "";
 
   dateVendorTimeRangePicker(BuildContext context) async {
     DateTimeRange? picked = await showDateRangePicker(

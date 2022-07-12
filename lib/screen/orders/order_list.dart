@@ -39,7 +39,6 @@ class OrderList extends StatelessWidget {
               onTap: moreOrder,
               child: CommonOrderCard(
                 orderNumber: data["orderNo"],
-                orderDateTime: data["orderDateTime"],
                 customerName: data["customerName"],
                 customerNumber: data["customerNumber"],
                 pickupStop: data["pickupStop"],

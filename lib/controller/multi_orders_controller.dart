@@ -1,8 +1,6 @@
 // ignore_for_file: equal_keys_in_map, unused_local_variable
 
 import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fw_manager/common/config.dart';
@@ -12,7 +10,6 @@ import 'package:fw_manager/networking/api_type.dart';
 import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class MultiOrdersController extends GetxController {
   TextEditingController shortNumberController = TextEditingController();
@@ -617,9 +614,6 @@ class MultiOrdersController extends GetxController {
 
   saveOrders() async {
     try {
-      print("finalOrder================$finalOrder");
-      print("orderIds" + selectedIds.toSet().toList().toString());
-      print("orderStatusIds" + selectedOrderStatusIds.toSet().toList().toString());
       var resData = await apis.call(
         ApiMethods().saveAdminOrder,
         {

@@ -128,7 +128,8 @@ class OrdersScreen extends StatelessWidget {
                 onRefresh: () => ordersController.onRefresh(),
                 child: ListView(
                   children: [
-                    ...ordersController.selectedOrders.obs.map((e) {
+                    ...ordersController.selectedOrderList.map((e) {
+                      var index = ordersController.selectedOrderList.indexOf(e) + 1;
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -137,7 +138,7 @@ class OrdersScreen extends StatelessWidget {
                             alignment: Alignment.center,
                             margin: const EdgeInsets.only(top: 5),
                             child: Text(
-                              e["_id"].toString(),
+                              index.toString(),
                               style: AppCss.h3.copyWith(
                                 color: Colors.black,
                               ),
@@ -145,20 +146,19 @@ class OrdersScreen extends StatelessWidget {
                           ),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => ordersController.onDetailsTap(e["orderNo"]),
+                              onTap: () => ordersController.onDetailsTap(e),
                               child: CommonOrderCard(
-                                orderNumber: e["orderNo"],
-                                orderDateTime: e["orderDateTime"],
-                                customerName: e["customerName"],
-                                customerNumber: e["customerNumber"],
-                                pickupStop: e["pickupStop"],
-                                amount: e["amount"],
-                                amountType: e["amountType"],
-                                status: e["status"],
-                                requestedVehicle: e["requestedVehicle"],
+                                orderNumber: e["orderNo"].toString(),
+                                customerName: e["customerId"]["name"].toString().toUpperCase().capitalizeFirst,
+                                customerNumber: e["customerId"]["mobile"].toString(),
+                                pickupStop: e["locations"].length.toString() + "\t" + "Stops",
+                                amount: "₹" + e["totalPayableAmount"].toString(),
+                                // amountType: e["amountType"],
+                                status: e["requestStatus"].toString(),
+                                requestedVehicle: e["customerId"]["name"].toString().toUpperCase().capitalizeFirst,
                                 image: imageAssets.bike,
                                 textClick: () async {
-                                  String link = "tel:${e["customerName"]}";
+                                  String link = "tel:${e["customerId"]["mobile"]}";
                                   await launch(link);
                                 },
                               ),

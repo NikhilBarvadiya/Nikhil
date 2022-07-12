@@ -11,6 +11,17 @@ class CodSettlementController extends GetxController {
   bool driverFilter = false;
   bool personNameSelect = false;
   bool driverNameSelect = false;
+  List<dynamic> driverNameList = [];
+  List<dynamic> driversList = [];
+  List<dynamic> vendorNameList = [];
+  List<dynamic> vendorList = [];
+  String diffAmount = "";
+  String collectableCash = "";
+  String cashReceive = "";
+  String startDateVendor = "";
+  String endDateVendor = "";
+  String startDateDriver = "";
+  String endDateDriver = "";
 
   List codList = [
     {
@@ -33,8 +44,6 @@ class CodSettlementController extends GetxController {
     update();
   }
 
-  List<dynamic> driverNameList = [];
-
   fatchDriverCodSettlement() async {
     try {
       var resData = await apis.call(
@@ -49,8 +58,6 @@ class CodSettlementController extends GetxController {
     } catch (e) {}
     update();
   }
-
-  List<dynamic> driversList = [];
 
   fatchDriverDetails(driverId) async {
     try {
@@ -71,8 +78,6 @@ class CodSettlementController extends GetxController {
     update();
   }
 
-  List<dynamic> vendorNameList = [];
-
   fatchVendorCodSettlement() async {
     try {
       var resData = await apis.call(
@@ -87,11 +92,6 @@ class CodSettlementController extends GetxController {
     } catch (e) {}
     update();
   }
-
-  List<dynamic> vendorList = [];
-  String diffAmount = "";
-  String collectableCash = "";
-  String cashReceive = "";
 
   fatchVendorDetails(vendorId) async {
     try {
@@ -108,16 +108,6 @@ class CodSettlementController extends GetxController {
       cashReceive = vendorList[0]["orderDetails"]["cashReceive"].toString();
       collectableCash = vendorList[0]["orderDetails"]["collectableCash"].toString();
       diffAmount = (collectableCash).compareTo(collectableCash).toString();
-      print("=====diffAmount===================$diffAmount");
-      print("=====cashReceive===================$cashReceive");
-      print("======collectableCash==================$collectableCash");
-      print("desc======>${vendorList[0]["orderDetails"]["orderNo"]}");
-      print("collectableCash======>${vendorList[0]["orderDetails"]["collectableCash"]}");
-      print("deferenceAmount======>${vendorList[0]["orderDetails"]["deferenceAmount"]}");
-      print("cashReceive======>${vendorList[0]["orderDetails"]["cashReceive"]}");
-      print("driverId======>${vendorList[0]["orderDetails"]["driverId"]["name"]}");
-      print("name======>${vendorList[0]["orderDetails"]["vendorOrderStatusId"]["addressId"]["name"]}");
-      print("person======>${vendorList[0]["orderDetails"]["vendorOrderStatusId"]["addressId"]["person"]}");
       return vendorList;
     } catch (e) {}
     update();
@@ -163,16 +153,11 @@ class CodSettlementController extends GetxController {
     update();
   }
 
-  /// By vendor ///
-
   onDatePickerVendor() async {
     vendorFilter = true;
     update();
     await dateVendorTimeRangePicker(Get.context!);
   }
-
-  String startDateVendor = "";
-  String endDateVendor = "";
 
   dateVendorTimeRangePicker(BuildContext context) async {
     DateTimeRange? picked = await showDateRangePicker(
@@ -193,16 +178,11 @@ class CodSettlementController extends GetxController {
     }
   }
 
-  /// By driver ///
-
   onDatePickerDriver() async {
     driverFilter = true;
     update();
     await dateDodTimeRangePicker(Get.context!);
   }
-
-  String startDateDriver = "";
-  String endDateDriver = "";
 
   dateDodTimeRangePicker(BuildContext context) async {
     DateTimeRange? picked = await showDateRangePicker(
