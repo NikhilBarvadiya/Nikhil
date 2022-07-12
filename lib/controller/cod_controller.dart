@@ -113,7 +113,7 @@ class CodSettlementController extends GetxController {
       print("======collectableCash==================$collectableCash");
       print("desc======>${vendorList[0]["orderDetails"]["orderNo"]}");
       print("collectableCash======>${vendorList[0]["orderDetails"]["collectableCash"]}");
-      print("diffAmount======>${vendorList[0]["orderDetails"]["diffAmount"]}");
+      print("deferenceAmount======>${vendorList[0]["orderDetails"]["deferenceAmount"]}");
       print("cashReceive======>${vendorList[0]["orderDetails"]["cashReceive"]}");
       print("driverId======>${vendorList[0]["orderDetails"]["driverId"]["name"]}");
       print("name======>${vendorList[0]["orderDetails"]["vendorOrderStatusId"]["addressId"]["name"]}");

@@ -1,20 +1,30 @@
-// ignore_for_file: empty_catches
-
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fw_manager/common/config.dart';
+import 'package:fw_manager/controller/app_controller.dart';
 import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 
 class VendorSettlementController extends GetxController {
   String vendorSelectedOrder = "Return order";
   bool returnOrderFilter = false;
-  // bool codOrderFilter = false;
+  final notController = TextEditingController();
+  TextEditingController controller = TextEditingController();
+  File? imageFile;
 
   @override
-  void onInit() async {
-    await fatchReturnSettlement();
+  void onInit() {
+    fatchReturnSettlement();
+    fatchvendorReturnSettlement();
+    _autoSelector();
     returnOrderFilter = false;
-    // codOrderFilter = false;
+    isReturnSettlement = "";
+    isReturnSettlementId = "";
+    notController.clear();
     super.onInit();
   }
 
@@ -29,120 +39,278 @@ class VendorSettlementController extends GetxController {
     },
   ];
 
-  // List codLocation = [
-  //   for (int i = 1; i < 11; i++)
-  //     {
-  //       "id": "$i Pending to collect COD Location",
-  //       "orderNo": "#VND-00608$i",
-  //       "place": "Order Placing Time",
-  //       "dateTime": "Apr 25, 2022, 4:23:08 PM",
-  //     }
-  // ];
-
-  List returnLocation = [
-    for (int i = 1; i < 11; i++)
-      {
-        "id": "$i Returned Location",
-        "orderNo": "#VND-00563$i",
-        "place": "Order Placing Time",
-        "dateTime": "Apr 13, 2022, 10:45:47 AM",
-      }
-  ];
-
-  onChange(int i) {
+  onChange(int i) async {
     for (int a = 0; a < selectedOrder.length; a++) {
       if (a == i) {
         selectedOrder[a]["isActive"] = true;
+        isReturnSettlement = "";
+        isReturnSettlementId = "";
         vendorSelectedOrder = selectedOrder[a]["selectedOrder"];
-        fatchReturnSettlement();
+        await fatchReturnSettlement();
+        await fatchvendorReturnSettlement();
       } else {
         selectedOrder[a]["isActive"] = false;
+        selectedVendorId.clear();
       }
     }
     update();
   }
 
-  onDatePickerReturn() async {
-    returnOrderFilter = true;
-    update();
-    await dateVendorTimeRangePicker(Get.context!);
+  List selectedVendorId = [];
+
+  addToSelectedList(item) {
+    if (item != null) {
+      var index = selectedVendorId.indexOf(item);
+      if (index == -1) {
+        selectedVendorId.add(item);
+      } else {
+        selectedVendorId.remove(item);
+      }
+      _autoSelector();
+    }
   }
 
-  String startDateReturnOrder = "";
-  String endDateReturnOrder = "";
+  _autoSelector() {
+    if (returnSettlement.isNotEmpty) {
+      for (int i = 0; i < returnSettlement.length; i++) {
+        int finder = 0;
+        for (int j = 0; j < selectedVendorId.length; j++) {
+          if (returnSettlement[i]['_id'] == selectedVendorId[j]['_id']) {
+            returnSettlement[i]['selected'] = true;
+            finder++;
+          }
+        }
+        if (finder == 0) {
+          returnSettlement[i]['selected'] = false;
+        }
+      }
+    }
+    update();
+  }
 
-  dateVendorTimeRangePicker(BuildContext context) async {
-    DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime.now().subtract(const Duration(days: 90)),
-      lastDate: DateTime.now(),
-      helpText: 'Select a Date or Date-Range',
-      initialDateRange: DateTimeRange(
-        end: DateTime.now(),
-        start: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1),
+  List returnSettlement = [];
+  String isReturnSettlement = "";
+  String isReturnSettlementId = "";
+
+  fatchReturnSettlement() async {
+    try {
+      bool status = selectedOrder[0]['isActive'] == true ? false : true;
+      dynamic jsonReq = {};
+      jsonReq["status"] = status;
+      if (isReturnSettlementId != "") {
+        jsonReq['vendorId'] = isReturnSettlementId;
+      }
+      var resData = await apis.call(
+        apiMethods.returnSettlement,
+        jsonReq,
+        ApiType.post,
+      );
+      if (resData.isSuccess == true && resData.data != 0) {
+        returnSettlement = resData.data;
+      }
+      return returnSettlement;
+    } catch (e) {
+      e;
+    }
+    update();
+  }
+
+  dynamic returnVendor;
+
+  fatchvendorReturnSettlement() async {
+    try {
+      bool status = selectedOrder[0]['isActive'] == true ? false : true;
+      dynamic jsonReq = {};
+      jsonReq["status"] = status;
+      var resData = await apis.call(
+        apiMethods.vendorReturnSettlement,
+        jsonReq,
+        ApiType.post,
+      );
+      if (resData.isSuccess == true && resData.data != 0) {
+        returnVendor = resData.data;
+      }
+      return returnVendor;
+    } catch (e) {
+      e;
+    }
+    update();
+  }
+
+  onReturnSettlementSelected(String id, String name) async {
+    isReturnSettlementId = id;
+    isReturnSettlement = name;
+    if (isReturnSettlementId != "") {
+      await fatchReturnSettlement();
+      // _autoSelector();
+      Get.back();
+    } else {
+      Get.snackbar(
+        "Error",
+        "Please try again ?",
+        backgroundColor: Colors.white,
+        colorText: Colors.black,
+      );
+    }
+    update();
+  }
+
+  dynamic sendOTP;
+
+  fatchSendOTP() async {
+    try {
+      var resData = await apis.call(
+        apiMethods.sendOTP,
+        {
+          "ids": selectedVendorId,
+        },
+        ApiType.post,
+      );
+      if (resData.isSuccess == true && resData.data != 0) {
+        sendOTP = resData.data;
+      }
+      return sendOTP;
+    } catch (e) {
+      e;
+    }
+    update();
+  }
+
+  dynamic returnOrderOtp;
+
+  fatchReturnOrderOtp() async {
+    try {
+      File signatureFile = await imageFromUInit8List(imageFile as Uint8List);
+      var resData = await apis.call(
+        apiMethods.returnOrderOtp,
+        {
+          "ids": selectedVendorId,
+          "otp": controller.text,
+          "note": notController.text,
+          "image": signatureFile,
+        },
+        ApiType.post,
+      );
+      if (resData.isSuccess == true && resData.data != 0) {
+        returnOrderOtp = resData.data;
+      }
+      return returnOrderOtp;
+    } catch (e) {
+      return "";
+    }
+  }
+
+  onSendOTP() {
+    Get.defaultDialog(
+      title: "Note",
+      radius: 2,
+      barrierDismissible: false,
+      content: Container(
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(
+            Radius.circular(2),
+          ),
+          border: Border.all(
+            color: AppController().appTheme.primary,
+            width: 1,
+          ),
+        ),
+        child: TextFormField(
+          maxLines: 5,
+          controller: notController,
+          decoration: const InputDecoration(filled: true, fillColor: Colors.white, border: InputBorder.none, hintText: "Do you know?"),
+        ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            if (notController.text != "") {
+              imageFromCamera();
+              Get.back();
+              if (imageFile != null) {
+                Get.defaultDialog(
+                  title: "OTP",
+                  radius: 2,
+                  barrierDismissible: false,
+                  content: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 25),
+                    child: PinFieldAutoFill(
+                      autoFocus: false,
+                      codeLength: 4,
+                      onCodeSubmitted: (val) async {
+                        if (controller.text != "") {
+                          await fatchReturnOrderOtp();
+                        } else {
+                          Get.snackbar(
+                            "Wrong",
+                            "Enter Otp",
+                            backgroundColor: Colors.white,
+                            colorText: Colors.black,
+                          );
+                        }
+                      },
+                      currentCode: controller.text,
+                      decoration: UnderlineDecoration(
+                        textStyle: const TextStyle(fontSize: 20, color: Colors.black),
+                        colorBuilder: FixedColorBuilder(AppController().appTheme.primary),
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () async {
+                        await fatchSendOTP();
+                      },
+                      child: const Text("Resend"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        notController.clear();
+                        update();
+                        Get.back();
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                  ],
+                );
+              }
+            }
+            update();
+          },
+          child: const Text("Ok"),
+        ),
+        TextButton(
+          onPressed: () {
+            notController.clear();
+            update();
+            Get.back();
+          },
+          child: const Text("Cancel"),
+        ),
+      ],
     );
+    update();
+  }
 
-    if (picked != null) {
-      startDateReturnOrder = picked.start.toIso8601String();
-      endDateReturnOrder = picked.end.toIso8601String();
+  imageFromCamera() async {
+    // ignore: deprecated_member_use
+    PickedFile? pickedFile = await ImagePicker().getImage(
+      source: ImageSource.camera,
+      maxHeight: 200,
+      maxWidth: 200,
+    );
+    if (pickedFile != null) {
+      imageFile = File(pickedFile.path);
+      await fatchSendOTP();
       update();
     }
   }
 
-  dynamic returnSettlement;
-  fatchReturnSettlement() async {
-    print("hello");
-    try {
-      var resData = await apis.call(
-        apiMethods.returnSettlement,
-        {
-          "status": selectedOrder[0]['isActive'] == true
-              ? true
-              : selectedOrder[1]['isActive'] == true
-                  ? false
-                  : true,
-          "vendorId": "",
-        },
-        ApiType.post,
-      );
-      print("hello");
-      if (resData.isSuccess == true && resData.data != 0) {
-        returnSettlement = resData.data;
-      }
-      print("driverList====>$returnSettlement");
-      return returnSettlement;
-    } catch (e) {}
-    update();
+  Future<File> imageFromUInit8List(Uint8List imageUInt8List) async {
+    Uint8List tempImg = imageUInt8List;
+    final tempDir = await getTemporaryDirectory();
+    final file = await File('${tempDir.path}/signatureImage.jpg').create();
+    file.writeAsBytesSync(tempImg);
+    return file;
   }
-
-  /// COD order ///
-
-  // onDatePickerCod() async {
-  //   codOrderFilter = true;
-  //   update();
-  //   await dateDodTimeRangePicker(Get.context!);
-  // }
-
-  // String startDateCodOrder = "";
-  // String endDateCodOrder = "";
-
-  // dateDodTimeRangePicker(BuildContext context) async {
-  //   DateTimeRange? picked = await showDateRangePicker(
-  //     context: context,
-  //     firstDate: DateTime.now().subtract(const Duration(days: 90)),
-  //     lastDate: DateTime.now(),
-  //     helpText: 'Select a Date or Date-Range',
-  //     initialDateRange: DateTimeRange(
-  //       end: DateTime.now(),
-  //       start: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1),
-  //     ),
-  //   );
-
-  //   if (picked != null) {
-  //     startDateCodOrder = picked.start.toIso8601String();
-  //     endDateCodOrder = picked.end.toIso8601String();
-  //     update();
-  //   }
-  // }
 }

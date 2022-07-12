@@ -80,7 +80,7 @@ class _MergeScreenState extends State<MergeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                         Expanded(
+                        Expanded(
                           child: Text(
                             multiOrdersController.isPickupSelected != "" ? multiOrdersController.isPickupSelected : 'Please Select',
                           ),
@@ -100,73 +100,69 @@ class _MergeScreenState extends State<MergeScreen> {
                 padding: const EdgeInsets.only(top: 10),
                 children: [
                   if (multiOrdersController.order[0]['isActive'] == true)
-                  ...multiOrdersController.selectedLocations.map((e) {
-                    int index = multiOrdersController.selectedLocations.indexOf(e);
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 20,
-                          alignment: Alignment.center,
-                          margin: const EdgeInsets.only(top: 5),
-                          child: Text(
-                            "${index + 1}",
-                            style: AppCss.h3.copyWith(
-                              color: Colors.black,
+                    ...multiOrdersController.selectedLocations.map((e) {
+                      int index = multiOrdersController.selectedLocations.indexOf(e);
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 20,
+                            alignment: Alignment.center,
+                            margin: const EdgeInsets.only(top: 5),
+                            child: Text(
+                              "${index + 1}",
+                              style: AppCss.h3.copyWith(
+                                color: Colors.black,
+                              ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: CommonMergeCard(
-                            person: e["person"],
-                            personData: e["name"],
-                            shortNo:e["shortNo"].toString(),
-                            address: e["address"],
-                            items: e["itemList"][0]["quantity"].toString(),
-                            onItems: () {
-                              multiOrdersController.itemsNameController.text = e["itemList"][0]["itemName"].toString();
-                              multiOrdersController.itemsController.text = e["itemList"][0]["quantity"].toString();
-                              showItemsModel(context);
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-               if (multiOrdersController.order[1]['isActive'] == true)
-                ...multiOrdersController.selectedB2CLocations.map((e) {
-                    int index = multiOrdersController.selectedB2CLocations.indexOf(e);
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 20,
-                          alignment: Alignment.center,
-                          margin: const EdgeInsets.only(top: 5),
-                          child: Text(
-                            "${index + 1}",
-                            style: AppCss.h3.copyWith(
-                              color: Colors.black,
+                          Expanded(
+                            child: CommonMergeCard(
+                              person: e["person"],
+                              personData: e["name"],
+                              shortNo: e["shortNo"].toString(),
+                              address: e["address"],
+                              items: e["itemList"].length.toString(),
+                              onItems: () {
+                                showItemsModel(context, e["itemList"]);
+                              },
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: CommonMergeCard(
-                            person: e["person"],
-                            personData: e["name"],
-                            shortNo: e["shortNo"].toString(),
-                            address: e["address"],
-                            items: e["itemList"][0]["quantity"].toString(),
-                            onItems: () {
-                              multiOrdersController.itemsNameController.text = e["itemList"][0]["itemName"].toString();
-                              multiOrdersController.itemsController.text = e["itemList"][0]["quantity"].toString();
-                              showItemsModel(context);
-                            },
+                        ],
+                      );
+                    }).toList(),
+                  if (multiOrdersController.order[1]['isActive'] == true)
+                    ...multiOrdersController.selectedB2CLocations.map((e) {
+                      int index = multiOrdersController.selectedB2CLocations.indexOf(e);
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 20,
+                            alignment: Alignment.center,
+                            margin: const EdgeInsets.only(top: 5),
+                            child: Text(
+                              "${index + 1}",
+                              style: AppCss.h3.copyWith(
+                                color: Colors.black,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
+                          Expanded(
+                            child: CommonMergeCard(
+                              person: e["person"],
+                              personData: e["name"],
+                              shortNo: e["shortNo"].toString(),
+                              address: e["address"],
+                              items: e["itemList"][0]["quantity"].toString(),
+                              onItems: () {
+                                showItemsModel(context, e["itemList"]);
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
                 ],
               ),
             ),
@@ -183,10 +179,12 @@ class _MergeScreenState extends State<MergeScreen> {
     );
   }
 
-  showItemsModel(context) {
+  showItemsModel(context, items) {
     commonBottomSheet(
       context: context,
+      height: MediaQuery.of(context).size.height * 50 / 100,
       widget: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -197,51 +195,27 @@ class _MergeScreenState extends State<MergeScreen> {
           Expanded(
             child: ListView(
               children: [
-                Card(
-                  elevation: 5,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(8),
-                    ),
-                  ),
-                  child: Container(
-                    height: 50.0,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                ...items.map((a) {
+                  return Card(
+                    elevation: 5,
+                    shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(
                         Radius.circular(8),
                       ),
                     ),
                     child: Container(
-                      alignment: Alignment.center,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: multiOrdersController.itemsNameController,
-                              readOnly: true,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                              ),
-                            ),
+                        height: 50.0,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        alignment: Alignment.centerLeft,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(8),
                           ),
-                          Expanded(
-                            child: TextFormField(
-                              controller: multiOrdersController.itemsController,
-                              readOnly: true,
-                              textAlign: TextAlign.end,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ).marginOnly(bottom: 5),
+                        ),
+                        child: Text(a["itemName"].toString())),
+                  ).marginOnly(bottom: 5);
+                }),
               ],
             ),
           ),

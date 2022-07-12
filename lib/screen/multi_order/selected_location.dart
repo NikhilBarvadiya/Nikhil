@@ -67,7 +67,7 @@ class SelectedLocation extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10),
                   children: [
                     if (multiOrdersController.order[0]['isActive'] == true)
-                      ...multiOrdersController.selectedOrderTrueList.map(
+                      ...multiOrdersController.selectedOrderTrueList.toSet().map(
                         (e) {
                           int index = multiOrdersController.selectedOrderTrueList.indexOf(e);
                           return Row(

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/core/theme/app_css.dart';
@@ -56,9 +55,6 @@ class NewOrderController extends GetxController {
   addToSelectedList(item) {
     if (item != null) {
       var index = selectedOrderTrueList.indexOf(item);
-      if (kDebugMode) {
-        print(index);
-      }
       if (index == -1) {
         selectedOrderTrueList.add(item);
         update();
@@ -101,9 +97,6 @@ class NewOrderController extends GetxController {
   _autoSelector() {
     for (int i = 0; i < selectedAddress.length; i++) {
       var data = selectedOrderTrueList.where((element) => element['personName'] == selectedAddress[i]['personName']);
-      if (kDebugMode) {
-        print(data);
-      }
       if (data.isNotEmpty) {
         selectedAddress[i]['selected'] = true;
       } else {

@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 class OrdersController extends GetxController {
   String selectedFilter = "Pending";
   bool isdragDrop = false;
+  bool ordersFilter = true;
   bool isSlider = true;
   List filters = [
     {
@@ -95,7 +96,7 @@ class OrdersController extends GetxController {
 
   @override
   void onInit() {
-    fatchOrders();
+    fatchOrders("");
     super.onInit();
   }
 
@@ -104,7 +105,7 @@ class OrdersController extends GetxController {
       if (a == i) {
         filters[a]["isActive"] = true;
         selectedFilter = filters[a]["label"];
-        fatchOrders();
+        fatchOrders(filters[i]["label"]);
       } else {
         filters[a]["isActive"] = false;
       }
@@ -115,7 +116,12 @@ class OrdersController extends GetxController {
   onRefresh() {
     return Future.delayed(
       const Duration(seconds: 1),
-      () => selectedOrders.addAll(selectedOrders[0]),
+      () {
+        startDateVendor = "";
+        endDateVendor = "";
+        update();
+        // selectedOrders.addAll(selectedOrders[0]);
+      },
     );
   }
 
@@ -179,7 +185,7 @@ class OrdersController extends GetxController {
 
   List selectedOrderList = [];
 
-  fatchOrders() async {
+  fatchOrders(type) async {
     try {
       var resData = await apis.call(
         apiMethods.orders,
@@ -187,19 +193,47 @@ class OrdersController extends GetxController {
           "page": 1,
           "limit": 10,
           "search": "",
-          "type": "Pending",
-          "fromDate": null,
-          "toDate": null,
+          "type": type,
+          "fromDate": startDateVendor.split("T").first,
+          "toDate": endDateVendor.split("T").first,
           "searchFilter": "3",
         },
         ApiType.post,
       );
       if (resData.isSuccess == true && resData.data != 0) {
-        selectedOrderList = resData.data;
+        selectedOrderList = resData.data["orders"]["docs"];
       }
       return selectedOrderList;
     } catch (e) {
       return null;
+    }
+  }
+
+  onDatePickerVendor() async {
+    ordersFilter = true;
+    update();
+    await dateVendorTimeRangePicker(Get.context!);
+  }
+
+  String startDateVendor = "";
+  String endDateVendor = "";
+
+  dateVendorTimeRangePicker(BuildContext context) async {
+    DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime.now().subtract(const Duration(days: 90)),
+      lastDate: DateTime.now(),
+      helpText: 'Select a Date or Date-Range',
+      initialDateRange: DateTimeRange(
+        end: DateTime.now(),
+        start: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1),
+      ),
+    );
+
+    if (picked != null) {
+      startDateVendor = picked.start.toIso8601String();
+      endDateVendor = picked.end.toIso8601String();
+      update();
     }
   }
 }

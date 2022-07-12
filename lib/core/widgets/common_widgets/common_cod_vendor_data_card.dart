@@ -83,12 +83,12 @@ class _CommonCodVendorDataCardState extends State<CommonCodVendorDataCard> {
                     ),
                     const Spacer(),
                     Text(
-                      "Allotted Driver",
-                      style: AppCss.body3.copyWith(color: Colors.black),
-                    ).paddingOnly(right: 5),
-                    Text(
-                      widget.allottedDrivers ?? '',
+                      "Status : ",
                       style: AppCss.h3.copyWith(color: Colors.black),
+                    ),
+                    Text(
+                      widget.status ?? '',
+                      style: AppCss.h3.copyWith(color: Theme.of(context).primaryColorDark),
                     ),
                   ],
                 ),
@@ -97,12 +97,12 @@ class _CommonCodVendorDataCardState extends State<CommonCodVendorDataCard> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "Status : ",
+                      "Allotted Driver :",
                       style: AppCss.h3.copyWith(color: Colors.black),
-                    ),
+                    ).paddingOnly(right: 5),
                     Text(
-                      widget.status ?? '',
-                      style: AppCss.h3.copyWith(color: Theme.of(context).primaryColorDark),
+                      widget.allottedDrivers ?? '',
+                      style: AppCss.body2.copyWith(color: Theme.of(context).primaryColorDark),
                     ),
                   ],
                 ),

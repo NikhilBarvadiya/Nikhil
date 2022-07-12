@@ -1,11 +1,18 @@
-// ignore_for_file: unused_local_variable, unnecessary_null_comparison, equal_keys_in_map
+// ignore_for_file: equal_keys_in_map, unused_local_variable
 
+import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fw_manager/common/config.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/core/theme/index.dart';
+import 'package:fw_manager/networking/api_type.dart';
 import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class MultiOrdersController extends GetxController {
   TextEditingController shortNumberController = TextEditingController();
@@ -17,6 +24,7 @@ class MultiOrdersController extends GetxController {
   bool isOpenOrder = false;
   bool isOpenB2COrder = false;
   bool isPolyline = false;
+  bool isb2cPolyline = false;
   List selectedOrderTrueList = [];
   String selectedOrder = "B2B Order";
   List order = [
@@ -41,6 +49,16 @@ class MultiOrdersController extends GetxController {
     isAreaSelected = "";
     isRouteSelectedId = "";
     super.onInit();
+  }
+
+  Completer<GoogleMapController> mapController = Completer();
+  dynamic locationsList;
+
+  void onMapCreated(GoogleMapController controller) {
+    if (!mapController.isCompleted) {
+      mapController.complete(controller);
+    }
+    update();
   }
 
   onShortNumberUpdate(int index) {
@@ -86,6 +104,16 @@ class MultiOrdersController extends GetxController {
       _autoSelector();
     } else {
       isOpenOrder = false;
+    }
+  }
+
+  onB2COpen() async {
+    if (isb2cRouteSelectedId != "" && isBusinessSelected != "" && isb2cRouteSelected != "") {
+      isOpenB2COrder = true;
+      await fatchB2CVendorOrders();
+      _autoB2CSelector();
+    } else {
+      isOpenB2COrder = false;
     }
   }
 
@@ -330,10 +358,14 @@ class MultiOrdersController extends GetxController {
     }
   }
 
+  List selectedIds = [];
+  List selectedOrderStatusIds = [];
+
+  //TESTED
   onMerge() {
-    List selectedIds = [];
-    List selectedOrderStatusIds = [];
     List location = [];
+    selectedIds = [];
+    selectedOrderStatusIds = [];
     for (var e in selectedOrderTrueList) {
       e["vendorOrderId"] == null ? selectedIds.add(e["vendorOrderId"]) : selectedIds.add(e["vendorOrderId"]["_id"]);
       selectedOrderStatusIds.add(e['_id']);
@@ -401,11 +433,14 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
+  List finalLocations = [];
   onPlacingOrderClicked() {
-    if (selectedPickupPoint != null && isVehiclesSelected != '' && isVehiclesSelected != null) {
-      selectedLocations.insert(0, selectedPickupPoint);
-      selectedLocations[0]['itemList'] = pickupItemsList;
-      onPlacingOrder(selectedLocations);
+    finalLocations = [];
+    if (selectedPickupPoint != null && isVehiclesSelected != '' && isDriversSelected != '') {
+      finalLocations = selectedLocations;
+      finalLocations.insert(0, selectedPickupPoint);
+      finalLocations[0]['itemList'] = pickupItemsList;
+      onPlacingOrder(finalLocations);
     } else {
       Get.snackbar(
         "* Fields are Mandatory",
@@ -414,27 +449,12 @@ class MultiOrdersController extends GetxController {
         colorText: Colors.black,
       );
     }
+    update();
   }
 
-  //  onB2CPlacingOrderClicked() {
-  //   print(selectedPickupPoint);
-  //   if (selectedPickupPoint != null && isVehiclesSelected != '' && isVehiclesSelected != null) {
-  //     selectedB2CLocations.insert(0, selectedPickupPoint);
-  //     selectedB2CLocations[0]['itemList'] = pickupB2CItemsList;
-  //     onPlacingOrder(selectedB2CLocations);
-  //   } else {
-  //     Get.snackbar(
-  //       "* Fields are Mandatory",
-  //       "Info",
-  //       backgroundColor: Colors.white,
-  //       colorText: Colors.black,
-  //     );
-  //   }
-  // }
-
+  dynamic finalOrder;
   onPlacingOrder(List selectedLocation) async {
     bool orderPreview = true;
-    dynamic finalOrder;
     dynamic orders = {
       "driver": {
         "driverId": isDriversSelected == '' ? null : driversByVehicleName[0]["_id"],
@@ -445,7 +465,7 @@ class MultiOrdersController extends GetxController {
         "vehicleNo": isDriversSelected == '' ? null : driversByVehicleName[0]["vehicleNo"],
         "vehiclePhoto": isDriversSelected == '' ? null : driversByVehicleName[0]["vehicleId"],
       },
-      "date": DateTime.now(),
+      "date": DateTime.now().toIso8601String().split("T").first,
       "dateType": 'Now',
       "requestedVehicle": isVehiclesSelected,
       "deliveryCharges": 0,
@@ -473,7 +493,7 @@ class MultiOrdersController extends GetxController {
       "customerRating": 0,
       "orderStatus": [
         {
-          "date": DateTime.now(),
+          "date": DateTime.now().toIso8601String().split("T").first,
           "status": isDriversSelected == '' ? 'Pending' : 'Accepted',
           "images": [],
         },
@@ -484,7 +504,6 @@ class MultiOrdersController extends GetxController {
     for (int i = 0; i < selectedLocation.length; i++) {
       var data = selectedLocation[i];
       dynamic outObjects = {};
-
       outObjects["type"] = (i == 0)
           ? 'Pickup'
           : (i == selectedLocation.length - 1)
@@ -535,7 +554,6 @@ class MultiOrdersController extends GetxController {
       locations.add(outObjects);
     }
     orders["locations"] = locations;
-
     var vehicleId = '';
     for (var e in vehiclesNames) {
       if (e["name"] == isVehiclesSelected) {
@@ -551,7 +569,6 @@ class MultiOrdersController extends GetxController {
       "isWallet": false,
       "walletAvailableAmount": 0,
     };
-
     for (var i = 0; i < orders['locations'].length; i++) {
       if (i == 0) {
         ordersData["pick"] = orders['locations'][i];
@@ -574,7 +591,7 @@ class MultiOrdersController extends GetxController {
       if (resData.isSuccess == true) {
         dynamic calulations = resData.data;
         orders["adminAmount"] = calulations["adminCharges"];
-        orders["driverAmount"] = amountController;
+        orders["driverAmount"] = amountController.text;
         orders["totalFragileCharges"] = calulations["fragileCharges"];
         orders["gstAmount"] = calulations["gstCharges"];
         orders["totalInsuranceCharges"] = calulations["insuranceCharges"];
@@ -588,25 +605,105 @@ class MultiOrdersController extends GetxController {
         orders["totalKm"] = calulations["totalDistance"];
         orders["walletPoint"] = calulations["walletAmount"];
         finalOrder = orders;
-        saveOrders();
+        await saveOrders();
       }
     } catch (e) {
-      return null;
+      if (kDebugMode) {
+        print("Error finalOrder");
+      }
     }
     update();
   }
 
-  saveOrders() {
-    Get.defaultDialog(
-      title: "Success",
-      middleText: "Successfully orders place",
-      radius: 2,
-    );
+  saveOrders() async {
+    try {
+      print("finalOrder================$finalOrder");
+      print("orderIds" + selectedIds.toSet().toList().toString());
+      print("orderStatusIds" + selectedOrderStatusIds.toSet().toList().toString());
+      var resData = await apis.call(
+        ApiMethods().saveAdminOrder,
+        {
+          // "orderData": finalOrder,
+        },
+        ApiType.post,
+      );
+      if (resData.isSuccess == true && resData.data != 0) {
+        try {
+          var updateData = await apis.call(
+            ApiMethods().updateVendorOrders,
+            {
+              // "orderIds": selectedIds.toSet().toList(),
+              // "orderStatusIds": selectedOrderStatusIds.toSet().toList(),
+              // "orderHaveDriver": isDriversSelected != "" ? true : false,
+            },
+            ApiType.post,
+          );
+          if (updateData.isSuccess == true && updateData.data != 0) {
+            // LoadingAnimationWidget.flickr(
+            //   leftDotColor: const Color(0xFF0063DC),
+            //   rightDotColor: const Color(0xFFFF0084),
+            //   size: 25,
+            // );
+            Get.defaultDialog(
+              title: "Success",
+              middleText: "Successfully orders save",
+              radius: 2,
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    isBusinessSelected = "";
+                    isVendorsSelectedId = "";
+                    isAreaSelected = "";
+                    isRouteSelectedId = "";
+                    isb2cRouteSelectedId = "";
+                    isB2CVendorsSelectedId = "";
+                    isVehiclesSelected = "";
+                    isDriversSelected = "";
+                    isPickupSelected = "";
+                    isOpenTap = false;
+                    isOpenOrder = false;
+                    isOpenB2COrder = false;
+                    amountController.clear();
+                    selectedOrderTrueList.clear();
+                    selectedB2COrderTrueList.clear();
+                    vendorOrdersList.clear();
+                    Get.offNamedUntil(AppRoutes.home, (Route<dynamic> route) => true);
+                    update();
+                  },
+                  child: const Text("Ok"),
+                ),
+              ],
+            );
+          }
+        } catch (e) {
+          Get.defaultDialog(
+            title: "Success",
+            middleText: "Successfully update",
+            radius: 2,
+          );
+        }
+      }
+    } catch (e) {
+      Get.defaultDialog(
+        title: "Success",
+        middleText: "Successfully orders place",
+        radius: 2,
+      );
+    }
   }
 
   onAssignDriver() {
     fatchVehiclesNames("");
-    Get.toNamed(AppRoutes.assignDriver);
+    if (isPickupSelected != "") {
+      Get.toNamed(AppRoutes.assignDriver);
+    } else {
+      Get.snackbar(
+        "Alert",
+        "Please select pickup point.....",
+        backgroundColor: Colors.white,
+        colorText: Colors.black,
+      );
+    }
     update();
   }
 
@@ -690,8 +787,13 @@ class MultiOrdersController extends GetxController {
   }
 
   onPolyline() {
-    isPolyline = !isPolyline;
-    update();
+    if (order[0]['isActive'] == true) {
+      isPolyline = !isPolyline;
+      update();
+    } else {
+      isb2cPolyline = !isb2cPolyline;
+      update();
+    }
   }
 
   List businessCategories = [];
@@ -938,8 +1040,7 @@ class MultiOrdersController extends GetxController {
     isb2cRouteSelectedId = id;
     if (isb2cRouteSelectedId != "" && isB2CVendorsSelected != "") {
       Get.back();
-      await fatchB2CVendorOrders();
-      _autoB2CSelector();
+      onB2COpen();
     } else {
       Get.snackbar(
         "Error",
