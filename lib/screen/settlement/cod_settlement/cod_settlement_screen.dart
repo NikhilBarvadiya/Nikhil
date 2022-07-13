@@ -8,10 +8,15 @@ import 'package:fw_manager/core/widgets/cod_widgets/by_drivers_widgets.dart';
 import 'package:fw_manager/core/widgets/cod_widgets/by_vendor_widgets.dart';
 import 'package:get/get.dart';
 
-class CodSettlementScreen extends StatelessWidget {
-  CodSettlementController codSettlementController = Get.put(CodSettlementController());
+class CodSettlementScreen extends StatefulWidget {
+  const CodSettlementScreen({Key? key}) : super(key: key);
 
-  CodSettlementScreen({Key? key}) : super(key: key);
+  @override
+  State<CodSettlementScreen> createState() => _CodSettlementScreenState();
+}
+
+class _CodSettlementScreenState extends State<CodSettlementScreen> {
+  CodSettlementController codSettlementController = Get.put(CodSettlementController());
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +80,7 @@ class CodSettlementScreen extends StatelessWidget {
                       Container(
                         alignment: Alignment.topLeft,
                         child: Text(
-                          "₹" + num.parse(codSettlementController.vendorNameList[0]["totalCash"].toString()).abs().toString(),
+                          "₹" + num.parse(codSettlementController.vendorNameList[0]["totalCash"].toString()).abs().round().toString(),
                           style: AppCss.h1.copyWith(
                             color: Colors.black,
                           ),
@@ -106,7 +111,7 @@ class CodSettlementScreen extends StatelessWidget {
                       Container(
                         alignment: Alignment.topLeft,
                         child: Text(
-                          "₹" + num.parse(codSettlementController.driverNameList[0]["totalCash"].toString()).abs().toString(),
+                          "₹" + num.parse(codSettlementController.driverNameList[0]["totalCash"].toString()).abs().round().toString(),
                           style: AppCss.h1.copyWith(
                             color: Colors.black,
                           ),
@@ -124,6 +129,7 @@ class CodSettlementScreen extends StatelessWidget {
                 ),
               ],
             ),
+
           // if (codSettlementController.personNameSelect != true &&
           //     codSettlementController.codList[0]["isActive"] &&
           //     codSettlementController.vendorList.isNotEmpty)

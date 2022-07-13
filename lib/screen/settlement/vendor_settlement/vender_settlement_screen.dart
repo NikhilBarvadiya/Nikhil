@@ -10,9 +10,15 @@ import 'package:fw_manager/core/widgets/common_widgets/common_settlement_card.da
 import 'package:fw_manager/core/widgets/common_widgets/searchable_list.dart';
 import 'package:get/get.dart';
 
-class VendorSettlementScreen extends StatelessWidget {
+class VendorSettlementScreen extends StatefulWidget {
+  const VendorSettlementScreen({Key? key}) : super(key: key);
+
+  @override
+  State<VendorSettlementScreen> createState() => _VendorSettlementScreenState();
+}
+
+class _VendorSettlementScreenState extends State<VendorSettlementScreen> {
   VendorSettlementController vendorSettlementController = Get.put(VendorSettlementController());
-  VendorSettlementScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +130,7 @@ class VendorSettlementScreen extends StatelessWidget {
                                   vendorSettlementController.addToSelectedList(vendorSettlementController.returnSettlement[i]);
                                 }
                               },
-                              borderColor: vendorSettlementController.returnSettlement[i]["selected"] == true ? Theme.of(context).primaryColor.withOpacity(0.8) : Colors.white,
+                              borderColor: vendorSettlementController.returnSettlement[i]["selected"] == true ? Colors.blue[50] : Colors.white,
                               name: vendorSettlementController.returnSettlement[i]["addressId"] != null ? vendorSettlementController.returnSettlement[i]["addressId"]["name"].toString() : '',
                               personName: vendorSettlementController.returnSettlement[i]["addressId"] != null ? vendorSettlementController.returnSettlement[i]["addressId"]["person"].toString() : '',
                               place: vendorSettlementController.returnSettlement[i]["addressId"] != null ? vendorSettlementController.returnSettlement[i]["addressId"]["address"].toString() : '',

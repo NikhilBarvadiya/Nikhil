@@ -10,10 +10,15 @@ import 'package:fw_manager/core/widgets/common_widgets/order_address_card.dart';
 import 'package:fw_manager/core/widgets/common_widgets/searchable_list.dart';
 import 'package:get/get.dart';
 
-class MultiOrdersScreen extends StatelessWidget {
-  MultiOrdersController multiOrdersController = Get.put(MultiOrdersController());
+class MultiOrdersScreen extends StatefulWidget {
+  const MultiOrdersScreen({Key? key}) : super(key: key);
 
-  MultiOrdersScreen({Key? key}) : super(key: key);
+  @override
+  State<MultiOrdersScreen> createState() => _MultiOrdersScreenState();
+}
+
+class _MultiOrdersScreenState extends State<MultiOrdersScreen> {
+  MultiOrdersController multiOrdersController = Get.put(MultiOrdersController());
 
   @override
   Widget build(BuildContext context) {
@@ -147,15 +152,15 @@ class MultiOrdersScreen extends StatelessWidget {
                           isLive: false,
                           isOnSearch: true,
                           fetchApi: (search) async {
-                            return multiOrdersController.order[0]['isActive'] == true ? multiOrdersController.fatchVendor(search) : multiOrdersController.fatchB2CVendor(search);
+                            return multiOrdersController.fatchVendor(search);
                           },
-                          itemList: multiOrdersController.order[0]['isActive'] == true ? multiOrdersController.getVendorsList : multiOrdersController.getB2CVendorsList,
+                          itemList: multiOrdersController.getVendorsList,
                           bindText: 'name',
                           bindValue: '_id',
                           labelText: 'Vendor',
                           hintText: 'Please Select',
                           onSelect: (val, text) {
-                            multiOrdersController.order[0]['isActive'] == true ? multiOrdersController.onVendorsSelected(val, text) : multiOrdersController.onB2CVendorsSelected(val, text);
+                            multiOrdersController.onVendorsSelected(val, text);
                           },
                         ),
                       );

@@ -172,11 +172,11 @@ class _AssignDriverScreenState extends State<AssignDriverScreen> {
               ).paddingAll(10),
               commonButton(
                 onTap: () {
-                  multiOrdersController.onPlacingOrderClicked();
+                  multiOrdersController.isOrderDone != true ? multiOrdersController.onPlacingOrderClicked() : null;
                 },
                 text: "Place Order",
                 height: 50.0,
-                color: Colors.green,
+                color: multiOrdersController.isOrderDone != true ? Colors.green : Colors.grey,
               ).paddingAll(10),
             ],
           ),

@@ -13,17 +13,61 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MultiOrdersController extends GetxController {
   TextEditingController shortNumberController = TextEditingController();
+  Completer<GoogleMapController> mapController = Completer();
   final amountController = TextEditingController(text: "0");
   final itemsNameController = TextEditingController();
   final itemsController = TextEditingController();
   String shortNumber = "";
+  String isPickupSelectedId = "";
+  String isPickupSelected = "";
+  String isVehiclesSelectedId = "";
+  String isVehiclesSelected = "";
+  String isDriversSelectedId = "";
+  String isDriversSelected = "";
+  String isVendorSelected = "";
+  String isVendorSelectedId = "";
+  String isb2cRouteSelected = "";
+  String isb2cRouteSelectedId = "";
+  String isB2CVendorsSelected = "";
+  String isB2CVendorsSelectedId = "";
+  String isRouteSelected = "";
+  String isRouteSelectedId = "";
+  String isAreaSelected = "";
+  String isAreaSelectedId = "";
+  String isVendorsSelected = "";
+  String isVendorsSelectedId = "";
+  String isBusinessSelected = "";
+  String isBusinessSelectedId = "";
   bool isOpenTap = false;
   bool isOpenOrder = false;
   bool isOpenB2COrder = false;
   bool isPolyline = false;
   bool isb2cPolyline = false;
+  bool isOrderDone = false;
+  List selectedB2COrderTrueList = [];
+  List b2cRouteList = [];
+  List vendorOrdersList = [];
+  List routeList = [];
+  List areaList = [];
   List selectedOrderTrueList = [];
+  List selectedIds = [];
+  List selectedOrderStatusIds = [];
+  List finalLocations = [];
+  List pickupItemsList = [];
+  List selectedLocations = [];
+  List getVendorsList = [];
+  List businessCategories = [];
+  List pickupB2CItemsList = [];
+  List selectedB2CLocations = [];
+  dynamic vendorB2COrdersList;
+  dynamic locationsList;
+  dynamic getGlobalAddress;
+  dynamic selectedPickupPoint;
+  dynamic vehiclesNames;
+  dynamic driversByVehicleName;
+  dynamic finalOrder;
   String selectedOrder = "B2B Order";
+
   List order = [
     {
       "order": "B2B Order",
@@ -39,17 +83,8 @@ class MultiOrdersController extends GetxController {
   void onInit() {
     fatchbusinessCategories();
     fatchArea("");
-    getGlobalAddressBySearch("");
-    _autoSelector();
-    isBusinessSelected = "";
-    isVendorsSelectedId = "";
-    isAreaSelected = "";
-    isRouteSelectedId = "";
     super.onInit();
   }
-
-  Completer<GoogleMapController> mapController = Completer();
-  dynamic locationsList;
 
   void onMapCreated(GoogleMapController controller) {
     if (!mapController.isCompleted) {
@@ -150,12 +185,7 @@ class MultiOrdersController extends GetxController {
     isRouteSelectedId = "";
     isb2cRouteSelectedId = "";
     isB2CVendorsSelectedId = "";
-    if (order[0]['isActive'] == true) {
-      fatchVendor("");
-    }
-    if (order[1]['isActive'] == true) {
-      fatchB2CVendor("");
-    }
+    fatchVendor("");
     if (isBusinessSelected != "") {
       onOpenOrder();
       Get.back();
@@ -214,12 +244,6 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
-  List pickupItemsList = [];
-  List selectedLocations = [];
-
-  String isPickupSelectedId = "";
-  String isPickupSelected = "";
-
   onPickupItemsList(String id, String name) async {
     if (id != "") {
       isPickupSelectedId = id;
@@ -244,9 +268,6 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
-  dynamic getGlobalAddress;
-  dynamic selectedPickupPoint;
-
   getGlobalAddressBySearch(search) async {
     try {
       var resData = await apis.call(
@@ -265,10 +286,6 @@ class MultiOrdersController extends GetxController {
       return [];
     }
   }
-
-  dynamic vehiclesNames;
-  String isVehiclesSelectedId = "";
-  String isVehiclesSelected = "";
 
   onSelectedVehiclesList(String id, String name) async {
     isVehiclesSelectedId = id;
@@ -305,10 +322,6 @@ class MultiOrdersController extends GetxController {
       return null;
     }
   }
-
-  dynamic driversByVehicleName;
-  String isDriversSelectedId = "";
-  String isDriversSelected = "";
 
   onBack() {
     isVehiclesSelected = "";
@@ -355,10 +368,6 @@ class MultiOrdersController extends GetxController {
     }
   }
 
-  List selectedIds = [];
-  List selectedOrderStatusIds = [];
-
-  //TESTED
   onMerge() {
     List location = [];
     selectedIds = [];
@@ -430,8 +439,8 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
-  List finalLocations = [];
   onPlacingOrderClicked() {
+    isOrderDone = true;
     finalLocations = [];
     if (selectedPickupPoint != null && isVehiclesSelected != '' && isDriversSelected != '') {
       finalLocations = selectedLocations;
@@ -449,7 +458,6 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
-  dynamic finalOrder;
   onPlacingOrder(List selectedLocation) async {
     bool orderPreview = true;
     dynamic orders = {
@@ -617,70 +625,59 @@ class MultiOrdersController extends GetxController {
       var resData = await apis.call(
         ApiMethods().saveAdminOrder,
         {
-          // "orderData": finalOrder,
+          "orderData": finalOrder,
         },
         ApiType.post,
       );
+
       if (resData.isSuccess == true && resData.data != 0) {
-        try {
-          var updateData = await apis.call(
-            ApiMethods().updateVendorOrders,
-            {
-              // "orderIds": selectedIds.toSet().toList(),
-              // "orderStatusIds": selectedOrderStatusIds.toSet().toList(),
-              // "orderHaveDriver": isDriversSelected != "" ? true : false,
-            },
-            ApiType.post,
-          );
-          if (updateData.isSuccess == true && updateData.data != 0) {
-            // LoadingAnimationWidget.flickr(
-            //   leftDotColor: const Color(0xFF0063DC),
-            //   rightDotColor: const Color(0xFFFF0084),
-            //   size: 25,
-            // );
-            Get.defaultDialog(
-              title: "Success",
-              middleText: "Successfully orders save",
-              radius: 2,
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    isBusinessSelected = "";
-                    isVendorsSelectedId = "";
-                    isAreaSelected = "";
-                    isRouteSelectedId = "";
-                    isb2cRouteSelectedId = "";
-                    isB2CVendorsSelectedId = "";
-                    isVehiclesSelected = "";
-                    isDriversSelected = "";
-                    isPickupSelected = "";
-                    isOpenTap = false;
-                    isOpenOrder = false;
-                    isOpenB2COrder = false;
-                    amountController.clear();
-                    selectedOrderTrueList.clear();
-                    selectedB2COrderTrueList.clear();
-                    vendorOrdersList.clear();
-                    Get.offNamedUntil(AppRoutes.home, (Route<dynamic> route) => true);
-                    update();
-                  },
-                  child: const Text("Ok"),
-                ),
-              ],
-            );
-          }
-        } catch (e) {
+        var updateData = await apis.call(
+          ApiMethods().updateVendorOrders,
+          {
+            "orderIds": selectedIds.toSet().toList(),
+            "orderStatusIds": selectedOrderStatusIds.toSet().toList(),
+            "orderHaveDriver": isDriversSelected != "" ? true : false,
+          },
+          ApiType.post,
+        );
+        if (updateData.isSuccess == true && updateData.data != 0) {
           Get.defaultDialog(
             title: "Success",
-            middleText: "Successfully update",
+            middleText: "Successfully orders save",
             radius: 2,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  isBusinessSelected = "";
+                  isVendorsSelectedId = "";
+                  isAreaSelected = "";
+                  isRouteSelectedId = "";
+                  isb2cRouteSelectedId = "";
+                  isB2CVendorsSelectedId = "";
+                  isVehiclesSelected = "";
+                  isDriversSelected = "";
+                  isPickupSelected = "";
+                  isOpenTap = false;
+                  isOpenOrder = false;
+                  isOpenB2COrder = false;
+                  isOrderDone = false;
+                  amountController.clear();
+                  selectedOrderTrueList.clear();
+                  selectedB2COrderTrueList.clear();
+                  vendorOrdersList.clear();
+                  Get.offNamedUntil(AppRoutes.home, (Route<dynamic> route) => true);
+                  update();
+                },
+                child: const Text("Ok"),
+              ),
+            ],
           );
         }
       }
     } catch (e) {
       Get.defaultDialog(
-        title: "Success",
-        middleText: "Successfully orders place",
+        title: "Error",
+        middleText: "Something wrong!",
         radius: 2,
       );
     }
@@ -700,9 +697,6 @@ class MultiOrdersController extends GetxController {
     }
     update();
   }
-
-  List pickupB2CItemsList = [];
-  List selectedB2CLocations = [];
 
   onB2CMerge() {
     List selectedIds = [];
@@ -790,52 +784,49 @@ class MultiOrdersController extends GetxController {
     }
   }
 
-  List businessCategories = [];
-  String isBusinessSelected = "";
-  String isBusinessSelectedId = "";
-
   fatchbusinessCategories() async {
     try {
       var resData = await apis.call(apiMethods.businessCategories, {}, ApiType.post);
       businessCategories = resData.data;
-      businessCategories.map((element) {
-        if (element['_id'] == isBusinessSelectedId) {
-          isBusinessSelected = element['title'];
+      for (var element in businessCategories) {
+        if (selectedOrder == "B2B Order") {
+          if (element['title'] == "Pharmacy") {
+            isBusinessSelectedId = element['_id'];
+            isBusinessSelected = element['title'];
+            isOpenTap = true;
+            await fatchVendor("");
+            update();
+          }
         }
-      });
+      }
+      update();
     } catch (e) {
-      return null;
+      if (kDebugMode) {
+        print(e.toString());
+      }
     }
     update();
   }
 
-  List getVendorsList = [];
-  String isVendorsSelected = "";
-  String isVendorsSelectedId = "";
-
   fatchVendor(String search) async {
     try {
       var resData = await apis.call(
-        apiMethods.getVendors,
+        apiMethods.fetchVendorByBusinessCategoryId,
         {
           "businessCategoryId": isBusinessSelectedId,
-          "_id": isVendorsSelectedId,
-          "search": search,
+          "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
         },
         ApiType.post,
       );
       if (resData.isSuccess == true && resData.data != 0) {
         getVendorsList = resData.data;
       }
+      update();
     } catch (e) {
       return null;
     }
     update();
   }
-
-  List areaList = [];
-  String isAreaSelected = "";
-  String isAreaSelectedId = "";
 
   fatchArea(String search) async {
     try {
@@ -858,10 +849,6 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
-  List routeList = [];
-  String isRouteSelected = "";
-  String isRouteSelectedId = "";
-
   fatchRoute(String search) async {
     try {
       var resData = await apis.call(
@@ -881,14 +868,10 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
-  List vendorOrdersList = [];
-  String isVendorSelected = "";
-  String isVendorSelectedId = "";
-
   fatchVendorOrders() async {
     try {
       var resData = await apis.call(
-        apiMethods.vendorOrders,
+        apiMethods.getVendors,
         {
           "orderType": isBusinessSelectedId,
           "routeId": isRouteSelected,
@@ -963,30 +946,6 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
-  List getB2CVendorsList = [];
-  String isB2CVendorsSelected = "";
-  String isB2CVendorsSelectedId = "";
-
-  fatchB2CVendor(String search) async {
-    try {
-      var resData = await apis.call(
-        apiMethods.getVendorInB2C,
-        {
-          "businessCategoryId": isBusinessSelectedId,
-          "_id": isB2CVendorsSelectedId,
-          "search": search,
-        },
-        ApiType.post,
-      );
-      if (resData.isSuccess == true && resData.data != 0) {
-        getB2CVendorsList = resData.data;
-      }
-    } catch (e) {
-      return null;
-    }
-    update();
-  }
-
   onB2CVendorsSelected(String name, String id) async {
     isB2CVendorsSelected = name;
     isb2cRouteSelectedId = "";
@@ -1005,10 +964,6 @@ class MultiOrdersController extends GetxController {
     }
     update();
   }
-
-  List b2cRouteList = [];
-  String isb2cRouteSelected = "";
-  String isb2cRouteSelectedId = "";
 
   fatchB2CRoute(String search) async {
     try {
@@ -1047,8 +1002,6 @@ class MultiOrdersController extends GetxController {
     update();
   }
 
-  dynamic vendorB2COrdersList;
-
   fatchB2CVendorOrders() async {
     try {
       var resData = await apis.call(
@@ -1068,8 +1021,6 @@ class MultiOrdersController extends GetxController {
     }
     update();
   }
-
-  List selectedB2COrderTrueList = [];
 
   addB2CToSelectedList(item) {
     if (item != null) {

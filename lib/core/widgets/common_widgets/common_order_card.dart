@@ -157,13 +157,16 @@ class _CommonOrderCardState extends State<CommonOrderCard> {
                     widget.image,
                     scale: 12,
                   ),
-                  label: Text(
-                    widget.requestedVehicle ?? '',
-                    style: AppCss.h3.copyWith(
-                      color: Colors.blue,
-                      decoration: TextDecoration.underline,
-                      decorationColor: Colors.blue,
-                      decorationThickness: 1,
+                  label: SizedBox(
+                    width: MediaQuery.of(context).size.width * 50 / 100,
+                    child: Text(
+                      widget.requestedVehicle ?? '',
+                      style: AppCss.h3.copyWith(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Colors.blue,
+                        decorationThickness: 1,
+                      ),
                     ),
                   ),
                 ),

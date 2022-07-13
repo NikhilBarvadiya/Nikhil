@@ -3,7 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fw_manager/common/config.dart';
+import 'package:fw_manager/controller/cod_controller.dart';
 import 'package:fw_manager/controller/login_controller.dart';
+import 'package:fw_manager/controller/multi_orders_controller.dart';
+import 'package:fw_manager/controller/orders_controller.dart';
+import 'package:fw_manager/controller/vender_settlement_controller.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/core/utilities/storage_utils.dart';
 import 'package:fw_manager/screen/multi_order/multi_orders_screen.dart';
@@ -34,26 +38,38 @@ class HomeController extends GetxController {
     {
       "pageName": "Orders",
       "icon": FontAwesomeIcons.box,
-      "screen": OrdersScreen(),
+      "screen": const OrdersScreen(),
     },
     {
       "pageName": "Multi Orders",
       "icon": FontAwesomeIcons.boxes,
-      "screen": MultiOrdersScreen(),
+      "screen": const MultiOrdersScreen(),
     },
     {
       "pageName": "Return Settlement",
       "icon": FontAwesomeIcons.rightLeft,
-      "screen": VendorSettlementScreen(),
+      "screen": const VendorSettlementScreen(),
     },
     {
       "pageName": "COD Settlement",
       "icon": FontAwesomeIcons.sackDollar,
-      "screen": CodSettlementScreen(),
+      "screen": const CodSettlementScreen(),
     },
   ];
 
   onSwitchScreen(int i) {
+    if (Get.isRegistered<OrdersController>()) {
+      Get.delete<OrdersController>();
+    }
+    if (Get.isRegistered<MultiOrdersController>()) {
+      Get.delete<MultiOrdersController>();
+    }
+    if (Get.isRegistered<VendorSettlementController>()) {
+      Get.delete<VendorSettlementController>();
+    }
+    if (Get.isRegistered<CodSettlementController>()) {
+      Get.delete<CodSettlementController>();
+    }
     selectedIndex = i;
     Get.back();
     update();

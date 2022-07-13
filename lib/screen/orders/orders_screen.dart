@@ -11,9 +11,15 @@ import 'package:fw_manager/core/widgets/common_widgets/searchable_list.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends StatefulWidget {
+  const OrdersScreen({Key? key}) : super(key: key);
+
+  @override
+  State<OrdersScreen> createState() => _OrdersScreenState();
+}
+
+class _OrdersScreenState extends State<OrdersScreen> {
   OrdersController ordersController = Get.put(OrdersController());
-  OrdersScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -149,13 +155,13 @@ class OrdersScreen extends StatelessWidget {
                               onTap: () => ordersController.onDetailsTap(e),
                               child: CommonOrderCard(
                                 orderNumber: e["orderNo"].toString(),
-                                customerName: e["customerId"]["name"].toString().toUpperCase().capitalizeFirst,
-                                customerNumber: e["customerId"]["mobile"].toString(),
+                                customerName: e["customerId"]["name"] != "" ? e["customerId"]["name"].toString().toUpperCase().capitalizeFirst : "-",
+                                customerNumber: e["customerId"]["mobile"] != "" ? e["customerId"]["mobile"].toString() : "-",
                                 pickupStop: e["locations"].length.toString() + "\t" + "Stops",
                                 amount: "₹" + e["totalPayableAmount"].toString(),
                                 // amountType: e["amountType"],
                                 status: e["requestStatus"].toString(),
-                                requestedVehicle: e["customerId"]["name"].toString().toUpperCase().capitalizeFirst,
+                                requestedVehicle: e["customerId"]["name"] != "" ? e["customerId"]["name"].toString().toUpperCase().capitalizeFirst : "-",
                                 image: imageAssets.bike,
                                 textClick: () async {
                                   String link = "tel:${e["customerId"]["mobile"]}";
@@ -167,6 +173,9 @@ class OrdersScreen extends StatelessWidget {
                         ],
                       );
                     }).toList(),
+                    // Center(
+                    //   child: CircularProgressIndicator(),
+                    // ),
                   ],
                 ),
               ),

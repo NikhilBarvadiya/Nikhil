@@ -1,21 +1,37 @@
+import 'dart:async';
 import 'dart:developer';
-
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fw_manager/common/config.dart';
+import 'package:fw_manager/core/assets/index.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:location/location.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class OrdersController extends GetxController {
   String selectedFilter = "Pending";
   bool isdragDrop = false;
   bool ordersFilter = true;
   bool isSlider = true;
+  bool start = true;
+  bool findingRoute = true;
+  bool isBounded = false;
   List selectedOrderList = [];
-  List isCountsList = [];
   String startDateVendor = "";
   String endDateVendor = "";
+  LatLng sourceLocation = const LatLng(21.1591425, 72.6822094);
+  LatLng destination = const LatLng(21.1452, 72.7572);
+  Completer<GoogleMapController> completer = Completer();
+  List<LatLng> polylineCoordinates = [];
+  Set<Marker> markers = {};
+  dynamic destinationIcon;
+
   List filters = [
     {
       "icon": Icons.pending_actions,
@@ -39,82 +55,161 @@ class OrdersController extends GetxController {
     }
   ];
 
-  // List<dynamic> selectedOrders = [
-  //   for (int i = 1; i < 11; i++)
-  //     {
-  //       "orderNo": "#ORD-00507$i",
-  //       "orderDateTime": "Jun 10, 2022, 10:19:52 AM",
-  //       "customerName": "Fastwhistle : ",
-  //       "customerNumber": " +91 6357017016",
-  //       "pickupStop": "5 Stops",
-  //       "amount": "₹253",
-  //       "amountType": i == 0
-  //           ? "C"
-  //           : i == 2
-  //               ? "W"
-  //               : i == 5
-  //                   ? "R"
-  //                   : "C",
-  //       "status": " Pending",
-  //       "requestedVehicle": "CHAUHAN RAHUL KANAHAIYA",
-  //       "_id": i,
-  //     },
-  // ];
+  void onMapCreated(GoogleMapController controller) {
+    if (!completer.isCompleted) {
+      completer.complete(controller);
+    }
+    update();
+  }
 
-  List<dynamic> orderList = [
-    for (int i = 0; i < 11; i++)
-      {
-        "header": i == 0
-            ? "Pickup"
-            : i == 10
-                ? "Drop"
-                : "Stop$i",
-        "time": " 3 Minutes",
-        "shopName": "Shreeji Pharmacy (Lal Darwaja)",
-        "personName": "(R19-87${i}7) ",
-        "number": "6353017016",
-        "address": "R-9, Nr.Shyam Nagar Ni Wadi L.H. Road L H Road, Minibazar Varachha",
-        "otp": "1234",
-        "note": "R-9-10-11",
-        "status": i == 1
-            ? "Pending"
-            : i == 2
-                ? "Running"
-                : i == 4
-                    ? "Complete"
-                    : i == 7
-                        ? "Cancelled"
-                        : "Pending",
-        "dateTime": "10/01/22,10:19 AM",
-        "amount": "₹37$i",
-        "amount1": "₹375",
+  getBackToSource() {
+    if (start) {
+      completer.future.then((value) {
+        value.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: sourceLocation, zoom: 16),
+          ),
+        );
+      });
+    } else {
+      _getBoundedView();
+    }
+    start = !start;
+    update();
+  }
+
+  Set<Marker> getmarkers() {
+    markers.add(
+      Marker(
+        markerId: const MarkerId('destination'),
+        position: destination,
+        icon: BitmapDescriptor.fromBytes(destinationIcon),
+      ),
+    );
+    getPolyPoint();
+    return markers;
+  }
+
+  getCurrentLocation() async {
+    Location location = Location();
+    location.changeSettings(accuracy: LocationAccuracy.high);
+    location.getLocation().then((location) {
+      sourceLocation = LatLng(location.latitude!, location.longitude!);
+      findingRoute = false;
+      getmarkers();
+      update();
+    });
+    destinationIcon = await _getBytesFromAsset(imageAssets.destination, 130);
+    location.onLocationChanged.listen((location) {
+      sourceLocation = LatLng(location.latitude!, location.longitude!);
+      markers.forEach((element) {
+        if (element.markerId == const MarkerId('pickup')) {
+          setLocation(element.position);
+        }
+      });
+      getPolyPoint();
+      update();
+    });
+  }
+
+  setLocation(LatLng position) {
+    position = sourceLocation;
+  }
+
+  getPolyPoint() async {
+    List<LatLng> _polylineCoordinates = [];
+    PolylinePoints polylinePoints = PolylinePoints();
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      "AIzaSyAIS-paIxOHBldW5OqArB0mmXSJQxW7zog",
+      PointLatLng(sourceLocation.latitude, sourceLocation.longitude),
+      PointLatLng(destination.latitude, destination.longitude),
+    );
+    if (result.points.isNotEmpty) {
+      result.points.forEach(
+        (PointLatLng point) => _polylineCoordinates.add(
+          LatLng(point.latitude, point.longitude),
+        ),
+      );
+      polylineCoordinates = _polylineCoordinates;
+      update();
+      if (!isBounded) {
+        isBounded = true;
+        update();
+        _getBoundedView();
       }
-  ];
+    }
+  }
+
+  _getBoundedView() {
+    completer.future.then((value) {
+      value.animateCamera(CameraUpdate.newLatLngBounds(_boundsFromLatLngList(polylineCoordinates), 50));
+    });
+  }
+
+  LatLngBounds _boundsFromLatLngList(List<LatLng> list) {
+    assert(list.isNotEmpty);
+    double? x0, x1, y0, y1;
+    for (LatLng latLng in list) {
+      if (x0 == null) {
+        x0 = x1 = latLng.latitude;
+        y0 = y1 = latLng.longitude;
+      } else {
+        if (latLng.latitude > x1!) x1 = latLng.latitude;
+        if (latLng.latitude < x0) x0 = latLng.latitude;
+        if (latLng.longitude > y1!) y1 = latLng.longitude;
+        if (latLng.longitude < y0!) y0 = latLng.longitude;
+      }
+    }
+    return LatLngBounds(northeast: LatLng(x1!, y1!), southwest: LatLng(x0!, y0!));
+  }
+
+  Future<Uint8List> _getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+  }
 
   onRecord(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
-    final item = orderList[0].removeAt(oldIndex);
-    orderList[0].insert(newIndex, item);
+    final item = selectedOrderList[0].removeAt(oldIndex);
+    selectedOrderList[0].insert(newIndex, item);
     update();
   }
 
   @override
   void onInit() {
-    fatchOrders("Pending");
+    onOrdersApiCalling();
     super.onInit();
   }
 
-  onChange(int i) async {
+  onChange(int i) {
     for (int a = 0; a < filters.length; a++) {
       if (a == i) {
         filters[a]["isActive"] = true;
         selectedFilter = filters[a]["label"];
-        await fatchOrders(filters[i]["label"]);
       } else {
         filters[a]["isActive"] = false;
       }
+    }
+    onOrdersApiCalling();
+    update();
+  }
+
+  onOrdersApiCalling() async {
+    if (filters[0]['isActive'] == true) {
+      await fatchOrders("Pending");
+    }
+    if (filters[1]['isActive'] == true) {
+      await fatchOrders("Running");
+    }
+    if (filters[2]['isActive'] == true) {
+      await fatchOrders("Complete");
+    }
+    if (filters[3]['isActive'] == true) {
+      await fatchOrders("Cancelled");
     }
     update();
   }
@@ -136,6 +231,7 @@ class OrdersController extends GetxController {
   }
 
   onMap() {
+    Get.toNamed(AppRoutes.ordersLocationMap);
     update();
   }
 
@@ -210,6 +306,7 @@ class OrdersController extends GetxController {
     } catch (e) {
       log("Error orders not faound");
     }
+    update();
   }
 
   onDatePickerVendor() async {

@@ -36,7 +36,7 @@ class _ByDriversWidgetsState extends State<ByDriversWidgets> {
                           itemList: const [],
                           bindText: 'name',
                           bindValue: '_id',
-                          labelText: 'Drivers category',
+                          labelText: 'Drivers name',
                           hintText: 'Please Select',
                           onSelect: (val, text) {
                             Navigator.pop(context);
@@ -91,7 +91,7 @@ class _ByDriversWidgetsState extends State<ByDriversWidgets> {
                   ),
                 ),
               ],
-            ).paddingOnly(bottom: codSettlementController.driverFilter != false ? 10 : 25),
+            ).paddingOnly(bottom: codSettlementController.driverFilter != false ? 10 : 10),
           if (codSettlementController.startDateDriver != "" && codSettlementController.endDateDriver != "" && codSettlementController.driverFilter != false && codSettlementController.driverNameSelect != true)
             Container(
               padding: const EdgeInsets.only(bottom: 25),
@@ -149,20 +149,26 @@ class _ByDriversWidgetsState extends State<ByDriversWidgets> {
             ),
           if (codSettlementController.driverNameSelect != false && codSettlementController.driversList.isNotEmpty)
             Expanded(
-              child: ListView(
+              child: Stack(
                 children: [
-                  for (int i = 0; i < codSettlementController.driversList.length; i++)
-                    Container(
-                      margin: EdgeInsets.only(bottom: i == (codSettlementController.driversList.length - 1) ? 100 : 5),
-                      child: CommonCodDriverCard(
-                        orderNo: codSettlementController.driversList[i]["orderDetails"]["orderNo"],
-                        addressDate: getFormattedDate(codSettlementController.driversList[i]["createdAt"].toString()),
-                        codAmount: codSettlementController.driversList[i]["orderDetails"]["collectableCash"] != null ? "₹" + codSettlementController.driversList[i]["orderDetails"]["collectableCash"].toString() : "₹0",
-                        cashReceive: codSettlementController.driversList[i]["orderDetails"]["cashReceive"] != null ? "₹" + codSettlementController.driversList[i]["orderDetails"]["cashReceive"].toString() : "₹0",
-                        diffAmount: codSettlementController.driversList[i]["orderDetails"]["deferenceAmount"] != null ? "₹" + codSettlementController.driversList[i]["orderDetails"]["deferenceAmount"].toString() : "₹0",
-                        allottedDrivers: codSettlementController.driversList[i]["orderDetails"]["driverId"] != null ? codSettlementController.driversList[i]["orderDetails"]["driverId"]["name"] : "0",
-                      ),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        for (int i = 0; i < codSettlementController.driversList.length; i++)
+                          Container(
+                            margin: EdgeInsets.only(bottom: i == (codSettlementController.driversList.length - 1) ? 100 : 5),
+                            child: CommonCodDriverCard(
+                              orderNo: codSettlementController.driversList[i]["orderDetails"]["orderNo"],
+                              addressDate: getFormattedDate(codSettlementController.driversList[i]["createdAt"].toString()),
+                              codAmount: codSettlementController.driversList[i]["orderDetails"]["collectableCash"] != null ? "₹" + codSettlementController.driversList[i]["orderDetails"]["collectableCash"].toString() : "₹0",
+                              cashReceive: codSettlementController.driversList[i]["orderDetails"]["cashReceive"] != null ? "₹" + codSettlementController.driversList[i]["orderDetails"]["cashReceive"].toString() : "₹0",
+                              diffAmount: codSettlementController.driversList[i]["orderDetails"]["deferenceAmount"] != null ? "₹" + codSettlementController.driversList[i]["orderDetails"]["deferenceAmount"].toString() : "₹0",
+                              allottedDrivers: codSettlementController.driversList[i]["orderDetails"]["driverId"] != null ? codSettlementController.driversList[i]["orderDetails"]["driverId"]["name"] : "0",
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ),

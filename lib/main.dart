@@ -18,7 +18,7 @@ Future<void> main() async {
   Get.put(CommonController());
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.grey.shade50,
+      systemNavigationBarColor: AppController().appTheme.primary,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );

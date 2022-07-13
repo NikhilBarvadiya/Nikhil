@@ -15,14 +15,14 @@ class ApiMethods {
   final String getVendors = "manager/getVendors";
   final String area = "manager/area";
   final String route = "manager/route";
-  final String vendorOrders = "manager/vendorOrders";
+  final String vendorOrders = "manager/vendorOrders"; // not use
   final String orders = "manager/orders";
   final String driverGetDetails = "manager/vCodSettlement/drivers/getDetails";
   final String driversDetails = "manager/vCodSettlement/drivers/driverDetails";
   final String vendorGetDetails = "manager/vCodSettlement/vendors/getDetails";
   final String vendorDetails = "manager/vCodSettlement/vendors/vendorDetails";
   final String b2bRoute = "manager/getAreaByVendorId";
-  final String getVendorInB2C = "manager/fetchVendorByBusinessCategoryId";
+  final String fetchVendorByBusinessCategoryId = "manager/fetchVendorByBusinessCategoryId";
   final String getVendorB2COrders = "manager/vendorB2COrders";
   final String getGlobalAddressBySearch = "manager/getGlobalAddressBySearch";
   final String vehiclesNames = "manager/vehiclesNames";
@@ -35,4 +35,8 @@ class ApiMethods {
   final String vendorReturnSettlement = "manager/vReturnSettlement/getDetails/vendorIds";
   final String sendOTP = "manager/vReturnSettlement/sendOTP";
   final String returnOrderOtp = "manager/vReturnSettlement/settlement";
+
+  final String sendOTPVendorCashSettlement = "manager/vCodSettlement/vendor/sendOTP";
+
+  final String updateVendorPackageDetails = "manager/updateVendorPackageDetails";
 }
