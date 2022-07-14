@@ -1,7 +1,7 @@
 // ignore_for_file: must_be_immutable
 import 'package:flutter/material.dart';
 import 'package:fw_manager/controller/app_controller.dart';
-import 'package:fw_manager/controller/vender_settlement_controller.dart';
+import 'package:fw_manager/controller/return_settlement_controller.dart';
 import 'package:fw_manager/core/theme/app_css.dart';
 import 'package:fw_manager/core/widgets/common_bottom_sheet/common_bottom_sheet.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_button.dart';
@@ -10,19 +10,19 @@ import 'package:fw_manager/core/widgets/common_widgets/common_settlement_card.da
 import 'package:fw_manager/core/widgets/common_widgets/searchable_list.dart';
 import 'package:get/get.dart';
 
-class VendorSettlementScreen extends StatefulWidget {
-  const VendorSettlementScreen({Key? key}) : super(key: key);
+class ReturnSettlementScreen extends StatefulWidget {
+  const ReturnSettlementScreen({Key? key}) : super(key: key);
 
   @override
-  State<VendorSettlementScreen> createState() => _VendorSettlementScreenState();
+  State<ReturnSettlementScreen> createState() => _ReturnSettlementScreenState();
 }
 
-class _VendorSettlementScreenState extends State<VendorSettlementScreen> {
-  VendorSettlementController vendorSettlementController = Get.put(VendorSettlementController());
+class _ReturnSettlementScreenState extends State<ReturnSettlementScreen> {
+  ReturnSettlementController returnSettlementController = Get.put(ReturnSettlementController());
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<VendorSettlementController>(
+    return GetBuilder<ReturnSettlementController>(
       builder: (_) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: Column(
@@ -30,9 +30,9 @@ class _VendorSettlementScreenState extends State<VendorSettlementScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                for (int i = 0; i < vendorSettlementController.selectedOrder.length; i++)
+                for (int i = 0; i < returnSettlementController.selectedOrder.length; i++)
                   GestureDetector(
-                    onTap: () => vendorSettlementController.onChange(i),
+                    onTap: () => returnSettlementController.onChange(i),
                     child: AnimatedContainer(
                       height: 45,
                       width: Get.width * 0.45,
@@ -43,15 +43,15 @@ class _VendorSettlementScreenState extends State<VendorSettlementScreen> {
                           Radius.circular(8),
                         ),
                         border: Border.all(
-                          color: vendorSettlementController.selectedOrder[i]["isActive"] ? Colors.transparent : AppController().appTheme.primary1.withOpacity(.8),
+                          color: returnSettlementController.selectedOrder[i]["isActive"] ? Colors.transparent : AppController().appTheme.primary1.withOpacity(.8),
                           width: 1,
                         ),
-                        color: vendorSettlementController.selectedOrder[i]["isActive"] ? AppController().appTheme.primary1.withOpacity(.8) : Colors.white,
+                        color: returnSettlementController.selectedOrder[i]["isActive"] ? AppController().appTheme.primary1.withOpacity(.8) : Colors.white,
                       ),
                       child: Text(
-                        vendorSettlementController.selectedOrder[i]["selectedOrder"],
+                        returnSettlementController.selectedOrder[i]["selectedOrder"],
                         style: AppCss.h1.copyWith(
-                          color: vendorSettlementController.selectedOrder[i]["isActive"] ? Colors.white : AppController().appTheme.primary1.withOpacity(.8),
+                          color: returnSettlementController.selectedOrder[i]["isActive"] ? Colors.white : AppController().appTheme.primary1.withOpacity(.8),
                         ),
                       ),
                     ),
@@ -70,13 +70,13 @@ class _VendorSettlementScreenState extends State<VendorSettlementScreen> {
                         widget: SearchableListView(
                           isLive: false,
                           isOnSearch: false,
-                          itemList: vendorSettlementController.returnVendor,
+                          itemList: returnSettlementController.returnVendor,
                           bindText: 'name',
                           bindValue: '_id',
                           labelText: 'Select vendor',
                           hintText: 'Please select',
                           onSelect: (val, text) {
-                            vendorSettlementController.onReturnSettlementSelected(val, text);
+                            returnSettlementController.onReturnSettlementSelected(val, text);
                           },
                         ),
                       );
@@ -105,7 +105,7 @@ class _VendorSettlementScreenState extends State<VendorSettlementScreen> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  vendorSettlementController.isReturnSettlement != '' ? vendorSettlementController.isReturnSettlement : 'Please Select',
+                                  returnSettlementController.isReturnSettlement != '' ? returnSettlementController.isReturnSettlement : 'Please Select',
                                 ),
                               ),
                               Icon(
@@ -119,22 +119,22 @@ class _VendorSettlementScreenState extends State<VendorSettlementScreen> {
                     ),
                   ),
                   const SizedBox(height: 15),
-                  if (vendorSettlementController.returnSettlement.isNotEmpty)
+                  if (returnSettlementController.returnSettlement.isNotEmpty)
                     Expanded(
                       child: ListView(
                         children: [
-                          for (int i = 0; i < vendorSettlementController.returnSettlement.length; i++)
+                          for (int i = 0; i < returnSettlementController.returnSettlement.length; i++)
                             CommonSettlementCard(
                               onTap: () {
-                                if (vendorSettlementController.isReturnSettlementId != "") {
-                                  vendorSettlementController.addToSelectedList(vendorSettlementController.returnSettlement[i]);
+                                if (returnSettlementController.isReturnSettlementId != "") {
+                                  returnSettlementController.addToSelectedList(returnSettlementController.returnSettlement[i]);
                                 }
                               },
-                              borderColor: vendorSettlementController.returnSettlement[i]["selected"] == true ? Colors.blue[50] : Colors.white,
-                              name: vendorSettlementController.returnSettlement[i]["addressId"] != null ? vendorSettlementController.returnSettlement[i]["addressId"]["name"].toString() : '',
-                              personName: vendorSettlementController.returnSettlement[i]["addressId"] != null ? vendorSettlementController.returnSettlement[i]["addressId"]["person"].toString() : '',
-                              place: vendorSettlementController.returnSettlement[i]["addressId"] != null ? vendorSettlementController.returnSettlement[i]["addressId"]["address"].toString() : '',
-                              dateTime: getFormattedDate(vendorSettlementController.returnSettlement[i]["createdAt"].toString()),
+                              borderColor: returnSettlementController.returnSettlement[i]["selected"] == true ? Colors.blue[50] : Colors.white,
+                              name: returnSettlementController.returnSettlement[i]["addressId"] != null ? returnSettlementController.returnSettlement[i]["addressId"]["name"].toString() : '',
+                              personName: returnSettlementController.returnSettlement[i]["addressId"] != null ? returnSettlementController.returnSettlement[i]["addressId"]["person"].toString() : '',
+                              place: returnSettlementController.returnSettlement[i]["addressId"] != null ? returnSettlementController.returnSettlement[i]["addressId"]["address"].toString() : '',
+                              dateTime: getFormattedDate(returnSettlementController.returnSettlement[i]["createdAt"].toString()),
                             ).paddingOnly(bottom: 5),
                           // Dismissible(
                           //   key: Key("$i"),
@@ -184,10 +184,10 @@ class _VendorSettlementScreenState extends State<VendorSettlementScreen> {
                         ],
                       ),
                     ),
-                  if (vendorSettlementController.isReturnSettlementId != "")
+                  if (returnSettlementController.isReturnSettlementId != "")
                     commonButton(
-                      onTap: () => vendorSettlementController.onSendOTP(),
-                      text: "Send OTP",
+                      onTap: () => returnSettlementController.askForNote(),
+                      text: "Procced",
                       height: 50.0,
                     ),
                 ],

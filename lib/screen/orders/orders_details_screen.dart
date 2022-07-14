@@ -1,6 +1,5 @@
 // ignore_for_file: must_be_immutable, deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fw_manager/controller/common_controller.dart';
 import 'package:fw_manager/controller/orders_controller.dart';
 import 'package:fw_manager/core/assets/index.dart';
@@ -33,12 +32,12 @@ class OrdersDetailsScreen extends StatelessWidget {
               onPressed: () => ordersController.onBack(),
               icon: const Icon(Icons.arrow_back),
             ),
-            actions: [
-              IconButton(
-                onPressed: () => ordersController.onMap(),
-                icon: const Icon(FontAwesomeIcons.mapLocationDot),
-              ),
-            ],
+            // actions: [
+            //   IconButton(
+            //     onPressed: () => ordersController.onMap(),
+            //     icon: const Icon(FontAwesomeIcons.mapLocationDot),
+            //   ),
+            // ],
           ),
           body: Column(
             children: [

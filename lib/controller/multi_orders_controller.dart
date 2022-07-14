@@ -103,8 +103,6 @@ class MultiOrdersController extends GetxController {
     for (int a = 0; a < order.length; a++) {
       if (a == i) {
         order[a]["isActive"] = true;
-        isBusinessSelected = "";
-        isVendorsSelectedId = "";
         isAreaSelected = "";
         isRouteSelectedId = "";
         isb2cRouteSelectedId = "";
@@ -114,6 +112,7 @@ class MultiOrdersController extends GetxController {
         order[a]["isActive"] = false;
       }
     }
+    fatchbusinessCategories();
     update();
   }
 
@@ -791,6 +790,14 @@ class MultiOrdersController extends GetxController {
       for (var element in businessCategories) {
         if (selectedOrder == "B2B Order") {
           if (element['title'] == "Pharmacy") {
+            isBusinessSelectedId = element['_id'];
+            isBusinessSelected = element['title'];
+            isOpenTap = true;
+            await fatchVendor("");
+            update();
+          }
+        } else {
+          if (element['title'] == "Food") {
             isBusinessSelectedId = element['_id'];
             isBusinessSelected = element['title'];
             isOpenTap = true;

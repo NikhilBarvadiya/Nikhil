@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fw_manager/controller/app_controller.dart';
 import 'package:fw_manager/controller/cod_controller.dart';
 import 'package:fw_manager/core/theme/app_css.dart';
-import 'package:fw_manager/core/widgets/common_bottom_sheet/common_bottom_sheet.dart';
+import 'package:fw_manager/core/widgets/common_widgets/common_button.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_cod_driver_card.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_cod_vendor_data_card.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_cod_vendors_card.dart';
-import 'package:fw_manager/core/widgets/common_widgets/searchable_list.dart';
 import 'package:get/get.dart';
 
 class ByDriversWidgets extends StatefulWidget {
@@ -22,87 +21,87 @@ class _ByDriversWidgetsState extends State<ByDriversWidgets> {
     return GetBuilder<CodSettlementController>(
       builder: (_) => Column(
         children: [
-          if (codSettlementController.driverNameSelect != true)
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      commonBottomSheet(
-                        context: context,
-                        widget: SearchableListView(
-                          isLive: false,
-                          isOnSearch: true,
-                          itemList: const [],
-                          bindText: 'name',
-                          bindValue: '_id',
-                          labelText: 'Drivers name',
-                          hintText: 'Please Select',
-                          onSelect: (val, text) {
-                            Navigator.pop(context);
-                          },
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Theme.of(context).primaryColor,
-                            width: 1.0,
-                          ),
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Expanded(
-                            child: Text('Search drivers'),
-                          ),
-                          Icon(
-                            Icons.arrow_drop_down,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                GestureDetector(
-                  onTap: () => codSettlementController.onDatePickerDriver(),
-                  child: Card(
-                    elevation: 1,
-                    color: Theme.of(context).primaryColor,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 100),
-                      alignment: Alignment.center,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                        child: const Icon(
-                          Icons.filter_alt_outlined,
-                          size: 25,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ).paddingOnly(bottom: codSettlementController.driverFilter != false ? 10 : 10),
-          if (codSettlementController.startDateDriver != "" && codSettlementController.endDateDriver != "" && codSettlementController.driverFilter != false && codSettlementController.driverNameSelect != true)
-            Container(
-              padding: const EdgeInsets.only(bottom: 25),
-              width: double.infinity,
-              alignment: Alignment.topLeft,
-              child: Text(
-                "${codSettlementController.startDateDriver.split("T").first} "
-                "- ${codSettlementController.endDateDriver.split("T").first}",
-                style: AppCss.h3,
-              ),
-            ),
+          // if (codSettlementController.driverNameSelect != true)
+          //   Row(
+          //     children: [
+          //       Expanded(
+          //         child: GestureDetector(
+          //           onTap: () {
+          //             commonBottomSheet(
+          //               context: context,
+          //               widget: SearchableListView(
+          //                 isLive: false,
+          //                 isOnSearch: true,
+          //                 itemList: const [],
+          //                 bindText: 'name',
+          //                 bindValue: '_id',
+          //                 labelText: 'Drivers name',
+          //                 hintText: 'Please Select',
+          //                 onSelect: (val, text) {
+          //                   Navigator.pop(context);
+          //                 },
+          //               ),
+          //             );
+          //           },
+          //           child: Container(
+          //             decoration: BoxDecoration(
+          //               color: Colors.grey[200],
+          //               border: Border(
+          //                 bottom: BorderSide(
+          //                   color: Theme.of(context).primaryColor,
+          //                   width: 1.0,
+          //                 ),
+          //               ),
+          //             ),
+          //             padding: const EdgeInsets.all(10),
+          //             child: Row(
+          //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //               children: [
+          //                 const Expanded(
+          //                   child: Text('Search drivers'),
+          //                 ),
+          //                 Icon(
+          //                   Icons.arrow_drop_down,
+          //                   color: Theme.of(context).primaryColor,
+          //                 ),
+          //               ],
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //       const SizedBox(width: 15),
+          //       GestureDetector(
+          //         onTap: () => codSettlementController.onDatePickerDriver(),
+          //         child: Card(
+          //           elevation: 1,
+          //           color: Theme.of(context).primaryColor,
+          //           child: AnimatedContainer(
+          //             duration: const Duration(milliseconds: 100),
+          //             alignment: Alignment.center,
+          //             child: Container(
+          //               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          //               child: const Icon(
+          //                 Icons.filter_alt_outlined,
+          //                 size: 25,
+          //                 color: Colors.white,
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ).paddingOnly(bottom: codSettlementController.driverFilter != false ? 10 : 10),
+          // if (codSettlementController.startDateDriver != "" && codSettlementController.endDateDriver != "" && codSettlementController.driverFilter != false && codSettlementController.driverNameSelect != true)
+          //   Container(
+          //     padding: const EdgeInsets.only(bottom: 25),
+          //     width: double.infinity,
+          //     alignment: Alignment.topLeft,
+          //     child: Text(
+          //       "${codSettlementController.startDateDriver.split("T").first} "
+          //       "- ${codSettlementController.endDateDriver.split("T").first}",
+          //       style: AppCss.h3,
+          //     ),
+          //   ),
           if (codSettlementController.driverNameSelect != false)
             Align(
               alignment: Alignment.topLeft,
@@ -119,7 +118,7 @@ class _ByDriversWidgetsState extends State<ByDriversWidgets> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Person Name',
+                  'Driver Name',
                   style: AppCss.h3.copyWith(
                     color: AppController().appTheme.primary1,
                   ),
@@ -149,15 +148,19 @@ class _ByDriversWidgetsState extends State<ByDriversWidgets> {
             ),
           if (codSettlementController.driverNameSelect != false && codSettlementController.driversList.isNotEmpty)
             Expanded(
-              child: Stack(
+              child: Column(
                 children: [
                   Expanded(
                     child: ListView(
                       children: [
                         for (int i = 0; i < codSettlementController.driversList.length; i++)
                           Container(
-                            margin: EdgeInsets.only(bottom: i == (codSettlementController.driversList.length - 1) ? 100 : 5),
+                            margin: EdgeInsets.only(bottom: i == (codSettlementController.driversList.length - 1) ? 20 : 5),
                             child: CommonCodDriverCard(
+                              onTap: () {
+                                codSettlementController.addToSelectedDriverList(codSettlementController.driversList[i]);
+                              },
+                              cardColors: codSettlementController.driversList[i]["selected"] == true ? Colors.blue[50] : Colors.white,
                               orderNo: codSettlementController.driversList[i]["orderDetails"]["orderNo"],
                               addressDate: getFormattedDate(codSettlementController.driversList[i]["createdAt"].toString()),
                               codAmount: codSettlementController.driversList[i]["orderDetails"]["collectableCash"] != null ? "₹" + codSettlementController.driversList[i]["orderDetails"]["collectableCash"].toString() : "₹0",
@@ -169,8 +172,23 @@ class _ByDriversWidgetsState extends State<ByDriversWidgets> {
                       ],
                     ),
                   ),
+                  if (codSettlementController.selectedDriverCOD.isNotEmpty)
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: commonButton(
+                        onTap: () => codSettlementController.askForNote(),
+                        text: "Proceed",
+                        height: 50.0,
+                      ),
+                    ),
                 ],
               ),
+            ),
+          if (codSettlementController.driverNameSelect != true && codSettlementController.driverNameList.isEmpty)
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.35),
+              child: const Text("No data found"),
             ),
           if (codSettlementController.driverNameSelect != false && codSettlementController.driversList.isEmpty)
             Container(

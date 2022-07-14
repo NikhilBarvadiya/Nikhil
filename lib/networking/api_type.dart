@@ -33,10 +33,11 @@ class ApiMethods {
 
   final String returnSettlement = "manager/vReturnSettlement/getDetails";
   final String vendorReturnSettlement = "manager/vReturnSettlement/getDetails/vendorIds";
-  final String sendOTP = "manager/vReturnSettlement/sendOTP";
-  final String returnOrderOtp = "manager/vReturnSettlement/settlement";
+  final String sendOTPReturnOrderSettlement = "manager/vReturnSettlement/sendOTP";
+  final String verifyOTPByReturnSettlement = "manager/vReturnSettlement/settlement";
 
   final String sendOTPVendorCashSettlement = "manager/vCodSettlement/vendor/sendOTP";
+  final String verifyOTPVendorCashSettlement = "manager/vCodSettlement/vendor/verify";
 
   final String updateVendorPackageDetails = "manager/updateVendorPackageDetails";
 }

@@ -155,7 +155,7 @@ class _ByVendorWidgetsState extends State<ByVendorWidgets> {
                             margin: EdgeInsets.only(bottom: i == (codSettlementController.vendorList.length - 1) ? 20 : 3),
                             child: CommonCodVendorDataCard(
                               onTap: () {
-                                codSettlementController.addToSelectedList(codSettlementController.vendorList[i]);
+                                codSettlementController.addToSelectedVendorList(codSettlementController.vendorList[i]);
                               },
                               cardColors: codSettlementController.vendorList[i]["selected"] == true ? Colors.blue[50] : Colors.white,
                               orderNo: codSettlementController.vendorList[i]["orderDetails"]["orderNo"],
@@ -183,6 +183,12 @@ class _ByVendorWidgetsState extends State<ByVendorWidgets> {
                     ),
                 ],
               ),
+            ),
+          if (codSettlementController.personNameSelect != true && codSettlementController.vendorNameList.isEmpty)
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.35),
+              child: const Text("No data found"),
             ),
           if (codSettlementController.personNameSelect != false && codSettlementController.vendorList.isEmpty)
             Container(

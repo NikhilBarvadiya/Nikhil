@@ -12,7 +12,6 @@ class CodSettlementController extends GetxController {
   final txtDescription = TextEditingController();
   TextEditingController controller = TextEditingController();
   String selectedCod = "By Vendor";
-  bool vendorFilter = false;
   bool driverFilter = false;
   bool personNameSelect = false;
   bool driverNameSelect = false;
@@ -22,19 +21,16 @@ class CodSettlementController extends GetxController {
   List<dynamic> vendorNameList = [];
   List<dynamic> vendorList = [];
   List selectedVendorsCOD = [];
-  String startDateVendor = "";
-  String endDateVendor = "";
-  String startDateDriver = "";
-  String endDateDriver = "";
+  List selectedDriverCOD = [];
+  String selectedVendor = "";
+  String selectedDriver = "";
   dynamic sendOTP;
   dynamic returnOrderOtp;
   File? imageFile;
-
   bool isLoading = false;
 
   @override
   void onInit() {
-    vendorFilter = false;
     driverFilter = false;
     onDriverApiCalling();
   }
@@ -58,6 +54,21 @@ class CodSettlementController extends GetxController {
       await _fetchDriverCODSettlement();
     }
     update();
+  }
+
+  onClear() {
+    driverNameList.clear();
+    driversList.clear();
+    vendorNameList.clear();
+    vendorList.clear();
+    selectedVendorsCOD.clear();
+    selectedDriverCOD.clear();
+    selectedVendor = "";
+    selectedDriver = "";
+    txtDescription.clear();
+    controller.clear();
+    update();
+    onDriverApiCalling();
   }
 
   _fetchDriverCODSettlement() async {
@@ -87,8 +98,6 @@ class CodSettlementController extends GetxController {
       if (resData.isSuccess == true && resData.data != 0) {
         driversList = resData.data;
       }
-      print("driverList====>$driversList");
-      print("driverList====>${driversList[0]["desc"]}");
       return driversList;
     } catch (e) {}
     update();
@@ -120,8 +129,6 @@ class CodSettlementController extends GetxController {
       );
       if (resData.isSuccess == true && resData.data != 0) {
         vendorList = resData.data;
-        print("dataset");
-        print(vendorList[0].toString());
       }
       return vendorList;
     } catch (e) {}
@@ -141,7 +148,6 @@ class CodSettlementController extends GetxController {
     update();
   }
 
-  String selectedVendor = "";
   onPersonNameClick(i) async {
     personNameSelect = true;
     selectedVendorsCOD = [];
@@ -152,79 +158,31 @@ class CodSettlementController extends GetxController {
 
   onDriverNameClick(i) async {
     driverNameSelect = true;
+    selectedDriverCOD = [];
+    selectedDriver = driverNameList[0]["data"][i]["_id"];
     await fatchDriverDetails(driverNameList[0]["data"][i]["_id"]);
     update();
   }
 
   onBackButton() {
-    startDateDriver = "";
-    endDateDriver = "";
     personNameSelect = false;
     driverNameSelect = false;
     update();
   }
 
-  onDatePickerVendor() async {
-    vendorFilter = true;
-    update();
-    await dateVendorTimeRangePicker(Get.context!);
-  }
+  // VENDOR COD SETTLEMENT
 
-  dateVendorTimeRangePicker(BuildContext context) async {
-    DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime.now().subtract(const Duration(days: 90)),
-      lastDate: DateTime.now(),
-      helpText: 'Select a Date or Date-Range',
-      initialDateRange: DateTimeRange(
-        end: DateTime.now(),
-        start: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1),
-      ),
-    );
-
-    if (picked != null) {
-      startDateVendor = picked.start.toIso8601String();
-      endDateVendor = picked.end.toIso8601String();
-      update();
-    }
-  }
-
-  onDatePickerDriver() async {
-    driverFilter = true;
-    update();
-    await dateDodTimeRangePicker(Get.context!);
-  }
-
-  dateDodTimeRangePicker(BuildContext context) async {
-    DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime.now().subtract(const Duration(days: 90)),
-      lastDate: DateTime.now(),
-      helpText: 'Select a Date or Date-Range',
-      initialDateRange: DateTimeRange(
-        end: DateTime.now(),
-        start: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1),
-      ),
-    );
-
-    if (picked != null) {
-      startDateDriver = picked.start.toIso8601String();
-      endDateDriver = picked.end.toIso8601String();
-      update();
-    }
-  }
-
-  addToSelectedList(item) {
+  addToSelectedVendorList(item) {
     int index = selectedVendorsCOD.indexOf(item);
     if (index == -1) {
       selectedVendorsCOD.add(item);
     } else {
       selectedVendorsCOD.remove(item);
     }
-    _autoSelector();
+    _autoVendorSelector();
   }
 
-  _autoSelector() {
+  _autoVendorSelector() {
     for (int i = 0; i < vendorList.length; i++) {
       var existing = selectedVendorsCOD.where((element) => element['_id'] == vendorList[i]["_id"]).toList();
       if (existing.length == 1) {
@@ -236,14 +194,39 @@ class CodSettlementController extends GetxController {
     update();
   }
 
+  // DRIVER COD SETTLEMENT
+
+  addToSelectedDriverList(item) {
+    int index = selectedDriverCOD.indexOf(item);
+    if (index == -1) {
+      selectedDriverCOD.add(item);
+    } else {
+      selectedDriverCOD.remove(item);
+    }
+    _autoDriverSelector();
+  }
+
+  _autoDriverSelector() {
+    for (int i = 0; i < driversList.length; i++) {
+      var existing = selectedDriverCOD.where((element) => element["_id"] == driversList[i]["_id"]).toList();
+      if (existing.length == 1) {
+        driversList[i]["selected"] = true;
+      } else {
+        driversList[i]["selected"] = false;
+      }
+    }
+    update();
+  }
+
   //ASK FOR OTP TO VENDOR FOR CASH SETTLEMENT
+
   _sendOTPVendorCashSettlement() async {
     try {
       isLoading = true;
       update();
       var request = {
-        "transactions": selectedVendorsCOD,
-        "receiverId": selectedVendor,
+        "transactions": codList[0]['isActive'] == true ? selectedVendorsCOD : selectedDriverCOD,
+        "receiverId": codList[0]['isActive'] == true ? selectedVendor : selectedDriver,
         "desc": txtDescription.text,
       };
       APIDataClass response = await apis.call(
@@ -293,7 +276,70 @@ class CodSettlementController extends GetxController {
     }
   }
 
+  _verifyOTPVendorCashSettlement() async {
+    try {
+      isLoading = true;
+      update();
+      var request = {
+        "otp": controller.text,
+        "transactions": codList[0]['isActive'] == true ? selectedVendorsCOD : selectedDriverCOD,
+        "receiverId": codList[0]['isActive'] == true ? selectedVendor : selectedDriver,
+        "desc": txtDescription.text,
+      };
+      print("Request");
+      print(request["receiverId"]);
+      APIDataClass response = await apis.call(
+        apiMethods.verifyOTPVendorCashSettlement,
+        request,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        Get.back();
+        onClear();
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (err) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          err.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+  }
+
   askForNote() {
+    txtDescription.clear();
+    controller.clear();
     Get.defaultDialog(
       title: "Note",
       radius: 2,
@@ -349,9 +395,10 @@ class CodSettlementController extends GetxController {
         child: PinFieldAutoFill(
           autoFocus: false,
           codeLength: 4,
+          controller: controller,
           onCodeSubmitted: (val) async {
             if (controller.text != "") {
-              // await fatchReturnOrderOtp();
+              await _verifyOTPVendorCashSettlement();
             } else {
               Get.snackbar(
                 "Wrong",
