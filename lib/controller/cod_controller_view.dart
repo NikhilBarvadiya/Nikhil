@@ -8,7 +8,7 @@ import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
-class CodSettlementController extends GetxController {
+class CodSettlementViewController extends GetxController {
   final txtDescription = TextEditingController();
   TextEditingController controller = TextEditingController();
   String selectedCod = "By Vendor";

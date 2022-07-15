@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fw_manager/common/config.dart';
-import 'package:fw_manager/controller/cod_controller.dart';
+import 'package:fw_manager/controller/cod_controller_view.dart';
+import 'package:fw_manager/controller/cod_settlement_controller.dart';
 import 'package:fw_manager/controller/login_controller.dart';
 import 'package:fw_manager/controller/multi_orders_controller.dart';
 import 'package:fw_manager/controller/orders_controller.dart';
@@ -11,6 +12,7 @@ import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/core/utilities/storage_utils.dart';
 import 'package:fw_manager/screen/multi_order/multi_orders_screen.dart';
 import 'package:fw_manager/screen/settlement/cod_settlement/cod_settlement_screen.dart';
+import 'package:fw_manager/screen/settlement/cod_settlement/cod_settlement_view_screen.dart';
 import 'package:fw_manager/screen/orders/orders_screen.dart';
 import 'package:fw_manager/screen/settlement/return_settlement/return_settlement_screen.dart';
 import 'package:get/get.dart';
@@ -51,8 +53,13 @@ class HomeController extends GetxController {
     },
     {
       "pageName": "COD Settlement",
-      "icon": FontAwesomeIcons.sackDollar,
+      "icon": FontAwesomeIcons.fileInvoiceDollar,
       "screen": const CodSettlementScreen(),
+    },
+    {
+      "pageName": "COD Settlement View",
+      "icon": FontAwesomeIcons.sackDollar,
+      "screen": const CodSettlementViewScreen(),
     },
   ];
 
@@ -65,6 +72,9 @@ class HomeController extends GetxController {
     }
     if (Get.isRegistered<ReturnSettlementController>()) {
       Get.delete<ReturnSettlementController>();
+    }
+    if (Get.isRegistered<CodSettlementViewController>()) {
+      Get.delete<CodSettlementViewController>();
     }
     if (Get.isRegistered<CodSettlementController>()) {
       Get.delete<CodSettlementController>();

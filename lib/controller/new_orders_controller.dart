@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fw_manager/common/config.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/core/theme/app_css.dart';
+import 'package:fw_manager/model/api_data_class.dart';
+import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
 
 class NewOrderController extends GetxController {
@@ -8,7 +11,14 @@ class NewOrderController extends GetxController {
   bool isSlider = true;
   bool isOpenTap = false;
   bool isOpenOrder = false;
+  bool isLoading = false;
   List selectedOrderTrueList = [];
+
+  @override
+  void onInit() {
+    shiftVendorOrderLocationsToPending();
+    super.onInit();
+  }
 
   onOpenTap() {
     isOpenTap = !isOpenTap;
@@ -21,7 +31,21 @@ class NewOrderController extends GetxController {
   }
 
   onNewSelectedOrders() {
-    Get.toNamed(AppRoutes.newSelectedOrdersScreen);
+    if (selectedOrderTrueList.isNotEmpty) {
+      Get.toNamed(AppRoutes.newSelectedOrdersScreen);
+    } else {
+      Get.rawSnackbar(
+        title: null,
+        messageText: const Text(
+          "order address not selected!",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.deepOrange,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+    }
     update();
   }
 
@@ -49,7 +73,15 @@ class NewOrderController extends GetxController {
   ];
 
   List selectedAddress = [
-    for (int i = 1; i < 11; i++) {"shopName": "WELL NATURES HEALTH CARE $i", "personName": "R27-1000$i", "number": "9898849850", "address": "R-27 KIMAVATI COMPLEX,SHOP NO.71,AT.KIM(EAST),TA.OLPAD,SURAT.", "Vendor": "SHREE HARI PHARMA", "selected": false}
+    for (int i = 1; i < 11; i++)
+      {
+        "shopName": "WELL NATURES HEALTH CARE $i",
+        "personName": "R27-1000$i",
+        "number": "9898849850",
+        "address": "R-27 KIMAVATI COMPLEX,SHOP NO.71,AT.KIM(EAST),TA.OLPAD,SURAT.",
+        "Vendor": "SHREE HARI PHARMA",
+        "selected": false,
+      }
   ];
 
   addToSelectedList(item) {
@@ -102,6 +134,60 @@ class NewOrderController extends GetxController {
       } else {
         selectedAddress[i]['selected'] = false;
       }
+      update();
+    }
+  }
+
+  shiftVendorOrderLocationsToPending() async {
+    try {
+      isLoading = true;
+      update();
+      var request = {
+        "vendorOrderStatusIds": "",
+      };
+      APIDataClass response = await apis.call(
+        apiMethods.shiftVendorOrderLocationsToPending,
+        request,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
       update();
     }
   }

@@ -16,20 +16,25 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class OrdersController extends GetxController {
   String selectedFilter = "Pending";
+  TextEditingController txtSearchController = TextEditingController();
   bool isdragDrop = false;
   bool ordersFilter = true;
   bool isSlider = true;
   bool start = true;
   bool findingRoute = true;
   bool isBounded = false;
+  bool isContainsKey = false;
   List selectedOrderList = [];
   String startDateVendor = "";
   String endDateVendor = "";
+  String searchFilterName = "";
+  String searchFilterId = "";
   LatLng sourceLocation = const LatLng(21.1591425, 72.6822094);
   LatLng destination = const LatLng(21.1452, 72.7572);
   Completer<GoogleMapController> completer = Completer();
   List<LatLng> polylineCoordinates = [];
   Set<Marker> markers = {};
+  dynamic locationStatus;
   dynamic destinationIcon;
 
   List filters = [
@@ -40,7 +45,7 @@ class OrdersController extends GetxController {
     },
     {
       "icon": Icons.running_with_errors,
-      "label": "Running",
+      "label": "Accpeted",
       "isActive": false,
     },
     {
@@ -54,6 +59,49 @@ class OrdersController extends GetxController {
       "isActive": false,
     }
   ];
+
+  List searchFilter = [
+    {
+      "name": "Driver Name",
+      "_id": "0",
+      "isActive": false,
+    },
+    {
+      "name": "Location Name",
+      "_id": "1",
+      "isActive": false,
+    },
+    {
+      "name": "Route No",
+      "_id": "2",
+      "isActive": false,
+    },
+    {
+      "name": "Order No",
+      "_id": "3",
+      "isActive": false,
+    },
+    {
+      "name": "Customer Name",
+      "_id": "4",
+      "isActive": false,
+    },
+  ];
+
+  onSearchFilter(items) {
+    for (int a = 0; a < searchFilter.length; a++) {
+      if (a == items) {
+        searchFilter[a]["isActive"] = true;
+        searchFilterName = searchFilter[a]["name"];
+        searchFilterId = searchFilter[a]["_id"];
+      } else {
+        searchFilter[a]["isActive"] = false;
+      }
+    }
+    onOrdersApiCalling("");
+    update();
+    Get.back();
+  }
 
   void onMapCreated(GoogleMapController controller) {
     if (!completer.isCompleted) {
@@ -181,11 +229,14 @@ class OrdersController extends GetxController {
 
   @override
   void onInit() {
-    onOrdersApiCalling();
+    onOrdersApiCalling("");
     super.onInit();
   }
 
   onChange(int i) {
+    searchFilterName = "";
+    searchFilterId = "";
+    txtSearchController.clear();
     for (int a = 0; a < filters.length; a++) {
       if (a == i) {
         filters[a]["isActive"] = true;
@@ -194,22 +245,22 @@ class OrdersController extends GetxController {
         filters[a]["isActive"] = false;
       }
     }
-    onOrdersApiCalling();
+    onOrdersApiCalling("");
     update();
   }
 
-  onOrdersApiCalling() async {
+  onOrdersApiCalling(search) async {
     if (filters[0]['isActive'] == true) {
-      await fatchOrders("Pending");
+      await fatchOrders("Pending", search);
     }
     if (filters[1]['isActive'] == true) {
-      await fatchOrders("Running");
+      await fatchOrders("Accepted", search);
     }
     if (filters[2]['isActive'] == true) {
-      await fatchOrders("Complete");
+      await fatchOrders("Completed", search);
     }
     if (filters[3]['isActive'] == true) {
-      await fatchOrders("Cancelled");
+      await fatchOrders("Cancelled", search);
     }
     update();
   }
@@ -220,6 +271,7 @@ class OrdersController extends GetxController {
       () {
         startDateVendor = "";
         endDateVendor = "";
+        searchFilterName = "";
         update();
       },
     );
@@ -242,7 +294,7 @@ class OrdersController extends GetxController {
     update();
   }
 
-  void openEditDialog() {
+  void openEditDialog(dynamic data) {
     Get.dialog(
       AlertDialog(
         title: const Text('Edit orders details'),
@@ -251,7 +303,7 @@ class OrdersController extends GetxController {
             title: const Text("Edit"),
             onTap: () {
               Get.back();
-              Get.toNamed(AppRoutes.editOrdersScreen);
+              Get.toNamed(AppRoutes.editOrdersScreen, arguments: data);
               update();
             },
           ),
@@ -280,23 +332,30 @@ class OrdersController extends GetxController {
               update();
             },
           ),
+          ListTile(
+            title: const Text("Delete"),
+            onTap: () {
+              Get.back();
+              update();
+            },
+          ),
         ],
       ),
     );
   }
 
-  fatchOrders(type) async {
+  fatchOrders(type, search) async {
     try {
       var resData = await apis.call(
         apiMethods.orders,
         {
           "page": 1,
-          "limit": 10,
-          "search": "",
+          "limit": 20,
+          "search": search,
           "type": type,
           "fromDate": startDateVendor.split("T").first,
           "toDate": endDateVendor.split("T").first,
-          "searchFilter": "3",
+          "searchFilter": searchFilterId,
         },
         ApiType.post,
       );
@@ -332,5 +391,33 @@ class OrdersController extends GetxController {
       endDateVendor = picked.end.toIso8601String();
       update();
     }
+  }
+
+  bool hasVendorData(items) {
+    bool hasKey = false;
+    for (int i = 0; i < items.length; i++) {
+      if (items[i]["vendorData"] != null) {
+        hasKey = true;
+      }
+    }
+    return hasKey;
+  }
+
+  String getTotalCashAndReceiveCash(items, String show) {
+    double receivedCash = 0;
+    double cashToBeRecieved = 0;
+    for (int i = 0; i < items.length; i++) {
+      if (items[i]["vendorData"] != null) {
+        if (items[i]["vendorData"]["cash"] != null) {
+          cashToBeRecieved += double.parse(items[i]["vendorData"]["cash"].toString()).toPrecision(2);
+        }
+
+        if (items[i]["vendorData"]["cashReceive"] != null) {
+          receivedCash += double.parse(items[i]["vendorData"]["cashReceive"].toString()).toPrecision(2);
+        }
+      }
+    }
+
+    return show == "cash" ? cashToBeRecieved.toString() : receivedCash.toString();
   }
 }

@@ -77,25 +77,7 @@ class _CommonOrderCardState extends State<CommonOrderCard> {
                   ),
                   child: Center(
                     child: Text(
-                      widget.amountType ?? '',
-                      style: AppCss.h3.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ).paddingOnly(right: 5),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 100),
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  decoration: const BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(5),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.amount ?? '',
+                      "${widget.amountType} ${widget.amount}",
                       style: AppCss.h3.copyWith(
                         color: Colors.white,
                       ),
@@ -127,7 +109,7 @@ class _CommonOrderCardState extends State<CommonOrderCard> {
           ),
           const SizedBox(height: 5),
           Padding(
-            padding: const EdgeInsets.only(left: 5),
+            padding: EdgeInsets.only(left: 5, bottom: widget.status != "Accepted" && widget.status != "Completed" ? 5 : 0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -144,40 +126,47 @@ class _CommonOrderCardState extends State<CommonOrderCard> {
                   widget.status ?? '',
                   style: AppCss.body1.copyWith(color: Colors.black),
                 ),
+                if (widget.status != "Accepted" && widget.status != "Completed" && widget.status != "Cancelled") const Spacer(),
+                if (widget.status != "Accepted" && widget.status != "Completed" && widget.status != "Cancelled")
+                  Text(
+                    widget.pickupStop ?? '',
+                    style: AppCss.h3,
+                  ).paddingOnly(right: 8),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Row(
-              children: [
-                TextButton.icon(
-                  onPressed: widget.textClick,
-                  icon: Image.asset(
-                    widget.image,
-                    scale: 12,
-                  ),
-                  label: SizedBox(
-                    width: MediaQuery.of(context).size.width * 50 / 100,
-                    child: Text(
-                      widget.requestedVehicle ?? '',
-                      style: AppCss.h3.copyWith(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                        decorationColor: Colors.blue,
-                        decorationThickness: 1,
+          if (widget.status != "Pending")
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: widget.textClick,
+                    icon: Image.asset(
+                      widget.image,
+                      scale: 12,
+                    ),
+                    label: SizedBox(
+                      width: MediaQuery.of(context).size.width * 50 / 100,
+                      child: Text(
+                        widget.requestedVehicle ?? '',
+                        style: AppCss.h3.copyWith(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.blue,
+                          decorationThickness: 1,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const Spacer(),
-                Text(
-                  widget.pickupStop ?? '',
-                  style: AppCss.h3,
-                ),
-              ],
+                  const Spacer(),
+                  Text(
+                    widget.pickupStop ?? '',
+                    style: AppCss.h3,
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

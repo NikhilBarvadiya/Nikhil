@@ -4,31 +4,28 @@ import 'package:fw_manager/model/api_data_class.dart';
 import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
 
-class EditOrdersController extends GetxController {
-  bool isSlider = true;
+class CodSettlementController extends GetxController {
   bool isLoading = false;
-  dynamic editArguments;
+  dynamic codDetails;
+  String text = "hello";
 
   @override
   void onInit() {
-    editArguments = Get.arguments;
-    orderDataUpdate();
+    vCodSettlementgetDetails();
     super.onInit();
   }
 
-  orderDataUpdate() async {
+  vCodSettlementgetDetails() async {
     try {
       isLoading = true;
       update();
-      var request = {
-        "orderDetails": editArguments,
-      };
       APIDataClass response = await apis.call(
-        apiMethods.orderDataUpdate,
-        request,
+        apiMethods.vCodSettlementgetDetails,
+        {},
         ApiType.post,
       );
       if (response.isSuccess && response.data != 0) {
+        codDetails = response.data;
         Get.rawSnackbar(
           title: null,
           messageText: Text(
@@ -53,6 +50,7 @@ class EditOrdersController extends GetxController {
           margin: const EdgeInsets.all(0),
         );
       }
+      return codDetails;
     } catch (e) {
       Get.rawSnackbar(
         title: null,

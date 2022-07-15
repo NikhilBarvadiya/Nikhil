@@ -34,7 +34,7 @@ class AppRoutes {
     GetPage(name: splash, page: () => SplashScreen()),
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: home, page: () => HomeScreen()),
-    GetPage(name: ordersDetailsScreen, page: () => OrdersDetailsScreen()),
+    GetPage(name: ordersDetailsScreen, page: () => const OrdersDetailsScreen()),
     GetPage(name: newSelectedOrdersScreen, page: () => NewSelectedOrdersScreen()),
     GetPage(name: editOrdersScreen, page: () => EditOrdersScreen()),
     GetPage(name: newOrdersScreen, page: () => NewOrdersScreen()),

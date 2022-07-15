@@ -30,14 +30,16 @@ class ApiMethods {
   final String calculateOrder = "manager/calculateOrder";
   final String saveAdminOrder = "manager/saveAdminOrder";
   final String updateVendorOrders = "manager/updateVendorOrders";
-
   final String returnSettlement = "manager/vReturnSettlement/getDetails";
   final String vendorReturnSettlement = "manager/vReturnSettlement/getDetails/vendorIds";
   final String sendOTPReturnOrderSettlement = "manager/vReturnSettlement/sendOTP";
   final String verifyOTPByReturnSettlement = "manager/vReturnSettlement/settlement";
-
   final String sendOTPVendorCashSettlement = "manager/vCodSettlement/vendor/sendOTP";
   final String verifyOTPVendorCashSettlement = "manager/vCodSettlement/vendor/verify";
-
   final String updateVendorPackageDetails = "manager/updateVendorPackageDetails";
+
+  final String orderDataUpdate = "manager/orderDataUpdate";
+  final String shiftVendorOrderLocationsToPending = "manager/shiftVendorOrderLocationsToPending";
+
+  final String vCodSettlementgetDetails = "manager/vCodSettlement/getDetails";
 }

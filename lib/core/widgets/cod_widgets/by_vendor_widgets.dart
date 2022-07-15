@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_final_fields
 import 'package:flutter/material.dart';
 import 'package:fw_manager/controller/app_controller.dart';
-import 'package:fw_manager/controller/cod_controller.dart';
+import 'package:fw_manager/controller/cod_controller_view.dart';
 import 'package:fw_manager/core/theme/app_css.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_button.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_cod_vendor_data_card.dart';
@@ -15,13 +15,13 @@ class ByVendorWidgets extends StatefulWidget {
 }
 
 class _ByVendorWidgetsState extends State<ByVendorWidgets> {
-  CodSettlementController codSettlementController = Get.put(CodSettlementController());
+  CodSettlementViewController codSettlementViewController = Get.put(CodSettlementViewController());
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<CodSettlementController>(
+    return GetBuilder<CodSettlementViewController>(
       builder: (_) => Column(
         children: [
-          // if (codSettlementController.personNameSelect != true)
+          // if (codSettlementViewController.personNameSelect != true)
           //   Row(
           //     children: [
           //       Expanded(
@@ -71,7 +71,7 @@ class _ByVendorWidgetsState extends State<ByVendorWidgets> {
           //       ),
           //       const SizedBox(width: 15),
           //       GestureDetector(
-          //         onTap: () => codSettlementController.onDatePickerVendor(),
+          //         onTap: () => codSettlementViewController.onDatePickerVendor(),
           //         child: Card(
           //           elevation: 1,
           //           color: Theme.of(context).primaryColor,
@@ -90,29 +90,29 @@ class _ByVendorWidgetsState extends State<ByVendorWidgets> {
           //         ),
           //       ),
           //     ],
-          //   ).paddingOnly(bottom: codSettlementController.vendorFilter != false ? 10 : 25),
-          // if (codSettlementController.startDateVendor != "" && codSettlementController.endDateVendor != "" && codSettlementController.vendorFilter != false && codSettlementController.personNameSelect != true)
+          //   ).paddingOnly(bottom: codSettlementViewController.vendorFilter != false ? 10 : 25),
+          // if (codSettlementViewController.startDateVendor != "" && codSettlementViewController.endDateVendor != "" && codSettlementViewController.vendorFilter != false && codSettlementViewController.personNameSelect != true)
           //   Container(
           //     padding: const EdgeInsets.only(bottom: 25),
           //     width: double.infinity,
           //     alignment: Alignment.topLeft,
           //     child: Text(
-          //       "${codSettlementController.startDateVendor.split("T").first} " "- ${codSettlementController.endDateVendor.split("T").first}",
+          //       "${codSettlementViewController.startDateVendor.split("T").first} " "- ${codSettlementViewController.endDateVendor.split("T").first}",
           //       style: AppCss.h3,
           //     ),
           //   ),
-          if (codSettlementController.personNameSelect != false)
+          if (codSettlementViewController.personNameSelect != false)
             Align(
               alignment: Alignment.topLeft,
               child: TextButton.icon(
                 onPressed: () {
-                  codSettlementController.onBackButton();
+                  codSettlementViewController.onBackButton();
                 },
                 icon: const Icon(Icons.arrow_back_ios_sharp, size: 13),
                 label: const Text("Back"),
               ),
             ),
-          if (codSettlementController.personNameSelect != true && codSettlementController.vendorNameList.isNotEmpty)
+          if (codSettlementViewController.personNameSelect != true && codSettlementViewController.vendorNameList.isNotEmpty)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -130,53 +130,53 @@ class _ByVendorWidgetsState extends State<ByVendorWidgets> {
                 ),
               ],
             ).paddingOnly(bottom: 5),
-          if (codSettlementController.personNameSelect != true && codSettlementController.vendorNameList.isNotEmpty)
+          if (codSettlementViewController.personNameSelect != true && codSettlementViewController.vendorNameList.isNotEmpty)
             Expanded(
               child: ListView(
                 children: [
-                  for (int i = 0; i < codSettlementController.vendorNameList[0]["data"].length; i++)
+                  for (int i = 0; i < codSettlementViewController.vendorNameList[0]["data"].length; i++)
                     CommonCodVendorsCard(
-                      personName: codSettlementController.vendorNameList[0]["data"][i]["name"].toString(),
-                      collectedAmount: "₹ " + num.parse(codSettlementController.vendorNameList[0]["data"][i]["mainBalance"].toString()).abs().round().toString(),
-                      onTap: () => codSettlementController.onPersonNameClick(i),
+                      personName: codSettlementViewController.vendorNameList[0]["data"][i]["name"].toString(),
+                      collectedAmount: "₹ " + num.parse(codSettlementViewController.vendorNameList[0]["data"][i]["mainBalance"].toString()).abs().round().toString(),
+                      onTap: () => codSettlementViewController.onPersonNameClick(i),
                     ),
                 ],
               ),
             ),
-          if (codSettlementController.personNameSelect != false && codSettlementController.vendorList.isNotEmpty)
+          if (codSettlementViewController.personNameSelect != false && codSettlementViewController.vendorList.isNotEmpty)
             Expanded(
               child: Column(
                 children: [
                   Expanded(
                     child: ListView(
                       children: [
-                        for (int i = 0; i < codSettlementController.vendorList.length; i++)
+                        for (int i = 0; i < codSettlementViewController.vendorList.length; i++)
                           Container(
-                            margin: EdgeInsets.only(bottom: i == (codSettlementController.vendorList.length - 1) ? 20 : 3),
+                            margin: EdgeInsets.only(bottom: i == (codSettlementViewController.vendorList.length - 1) ? 20 : 3),
                             child: CommonCodVendorDataCard(
                               onTap: () {
-                                codSettlementController.addToSelectedVendorList(codSettlementController.vendorList[i]);
+                                codSettlementViewController.addToSelectedVendorList(codSettlementViewController.vendorList[i]);
                               },
-                              cardColors: codSettlementController.vendorList[i]["selected"] == true ? Colors.blue[50] : Colors.white,
-                              orderNo: codSettlementController.vendorList[i]["orderDetails"]["orderNo"],
-                              name: codSettlementController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"] != null ? codSettlementController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"]["name"].toString().toCapitalized() : codSettlementController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["address"].toString().toCapitalized(),
-                              personName: "(${codSettlementController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"] != null ? codSettlementController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"]["person"].toString().toCapitalized() : '-'})",
-                              addressDate: getFormattedDate(codSettlementController.vendorList[i]["createdAt"].toString()),
-                              status: codSettlementController.vendorList[i]["status"].toString().toCapitalized(),
-                              codAmount: codSettlementController.vendorList[i]["orderDetails"]["collectableCash"] != null ? "₹" + num.parse(codSettlementController.vendorList[i]["orderDetails"]["collectableCash"].toString()).abs().round().toString() : "₹0",
-                              cashReceive: codSettlementController.vendorList[i]["orderDetails"]["cashReceive"] != null ? "₹" + num.parse(codSettlementController.vendorList[i]["orderDetails"]["cashReceive"].toString()).abs().round().toString() : "₹0",
-                              diffAmount: codSettlementController.vendorList[i]["orderDetails"]["deferenceAmount"] != null ? "₹" + num.parse(codSettlementController.vendorList[i]["orderDetails"]["deferenceAmount"].toString()).abs().round().toString() : "₹0",
-                              allottedDrivers: codSettlementController.vendorList[i]["orderDetails"]["driverId"] != null ? codSettlementController.vendorList[i]["orderDetails"]["driverId"]["name"] : "0",
+                              cardColors: codSettlementViewController.vendorList[i]["selected"] == true ? Colors.blue[50] : Colors.white,
+                              orderNo: codSettlementViewController.vendorList[i]["orderDetails"]["orderNo"],
+                              name: codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"] != null ? codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"]["name"].toString().toCapitalized() : codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["address"].toString().toCapitalized(),
+                              personName: "(${codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"] != null ? codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"]["person"].toString().toCapitalized() : '-'})",
+                              addressDate: getFormattedDate(codSettlementViewController.vendorList[i]["createdAt"].toString()),
+                              status: codSettlementViewController.vendorList[i]["status"].toString().toCapitalized(),
+                              codAmount: codSettlementViewController.vendorList[i]["orderDetails"]["collectableCash"] != null ? "₹" + num.parse(codSettlementViewController.vendorList[i]["orderDetails"]["collectableCash"].toString()).abs().round().toString() : "₹0",
+                              cashReceive: codSettlementViewController.vendorList[i]["orderDetails"]["cashReceive"] != null ? "₹" + num.parse(codSettlementViewController.vendorList[i]["orderDetails"]["cashReceive"].toString()).abs().round().toString() : "₹0",
+                              diffAmount: codSettlementViewController.vendorList[i]["orderDetails"]["deferenceAmount"] != null ? "₹" + num.parse(codSettlementViewController.vendorList[i]["orderDetails"]["deferenceAmount"].toString()).abs().round().toString() : "₹0",
+                              allottedDrivers: codSettlementViewController.vendorList[i]["orderDetails"]["driverId"] != null ? codSettlementViewController.vendorList[i]["orderDetails"]["driverId"]["name"] : "0",
                             ),
                           ),
                       ],
                     ),
                   ),
-                  if (codSettlementController.selectedVendorsCOD.isNotEmpty)
+                  if (codSettlementViewController.selectedVendorsCOD.isNotEmpty)
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: commonButton(
-                        onTap: () => codSettlementController.askForNote(),
+                        onTap: () => codSettlementViewController.askForNote(),
                         text: "Proceed",
                         height: 50.0,
                       ),
@@ -184,13 +184,13 @@ class _ByVendorWidgetsState extends State<ByVendorWidgets> {
                 ],
               ),
             ),
-          if (codSettlementController.personNameSelect != true && codSettlementController.vendorNameList.isEmpty)
+          if (codSettlementViewController.personNameSelect != true && codSettlementViewController.vendorNameList.isEmpty)
             Container(
               alignment: Alignment.center,
               padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.35),
               child: const Text("No data found"),
             ),
-          if (codSettlementController.personNameSelect != false && codSettlementController.vendorList.isEmpty)
+          if (codSettlementViewController.personNameSelect != false && codSettlementViewController.vendorList.isEmpty)
             Container(
               alignment: Alignment.center,
               padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.35),

@@ -11,6 +11,7 @@ class PickupOrdersCard extends StatefulWidget {
   final String? time;
   final String? shopName;
   final String? personName;
+  final Column? items;
   final String? number;
   final String? address;
   final String? otp;
@@ -18,15 +19,16 @@ class PickupOrdersCard extends StatefulWidget {
   final String? status;
   final String? amount;
   final String? amount1;
-  final List? stopList;
-  final List? shopNameList;
+  final int? index;
+  // final List? stopList;
+  // final List? shopNameList;
   final dynamic itemList;
   final void Function()? textClick;
   final void Function()? editClick;
   final void Function()? itemClick;
   final void Function()? imagetrap;
   final dynamic callIcon;
-  final dynamic image;
+  final dynamic imageShow;
 
   const PickupOrdersCard({
     Key? key,
@@ -43,13 +45,13 @@ class PickupOrdersCard extends StatefulWidget {
     this.status,
     this.itemClick,
     this.editClick,
-    this.stopList,
-    this.shopNameList,
     this.amount,
-    this.image,
+    this.imageShow,
     this.imagetrap,
     this.amount1,
     this.itemList,
+    this.index,
+    this.items,
   }) : super(key: key);
 
   @override
@@ -86,58 +88,70 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  widget.header ?? '',
-                  style: AppCss.h1.copyWith(
-                    color: widget.header == "Pickup"
-                        ? Colors.white
-                        : widget.header == "Drop"
+                Row(
+                  children: [
+                    Text(
+                      widget.header ?? '',
+                      style: AppCss.h1.copyWith(
+                        color: widget.header == "Pickup"
                             ? Colors.white
-                            : AppController().appTheme.primary1,
-                  ),
-                ).paddingOnly(right: 5),
-                Card(
-                  elevation: 1,
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.access_time_outlined,
-                          color: Colors.black,
-                          size: 15,
-                        ).paddingOnly(right: 2),
-                        Text(
-                          widget.time ?? '',
-                          style: AppCss.body1.copyWith(
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
+                            : widget.header == "Drop"
+                                ? Colors.white
+                                : AppController().appTheme.primary1,
+                      ),
+                    ).paddingOnly(right: 5),
+                    Text(
+                      widget.header == "Pickup"
+                          ? ""
+                          : widget.header == "Drop"
+                              ? ""
+                              : widget.index.toString(),
+                      style: AppCss.h1.copyWith(
+                        color: widget.header == "Pickup"
+                            ? Colors.white
+                            : widget.header == "Drop"
+                                ? Colors.white
+                                : AppController().appTheme.primary1,
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                Card(
-                  elevation: 1,
-                  color: widget.status == "Pending"
-                      ? Colors.deepOrangeAccent
-                      : widget.status == "Running"
-                          ? Colors.blue
-                          : widget.status == "Complete"
-                              ? Colors.green
-                              : widget.status == "Cancelled"
-                                  ? Colors.red
-                                  : Colors.transparent,
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      widget.status ?? '',
-                      style: AppCss.body1.copyWith(
-                        color: Colors.white,
+                if (widget.status != "Pending")
+                  Card(
+                    elevation: 1,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.access_time_outlined,
+                            color: Colors.black,
+                            size: 15,
+                          ).paddingOnly(right: 2),
+                          Text(
+                            widget.time ?? '',
+                            style: AppCss.body1.copyWith(
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
+                if (widget.status != null && widget.status == "Pending")
+                  Card(
+                    elevation: 1,
+                    color: Colors.blue,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        widget.status ?? '',
+                        style: AppCss.body1.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ).paddingOnly(bottom: 5),
@@ -167,7 +181,7 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
                 ),
               ],
             ),
-          ).paddingOnly(bottom: 5),
+          ).paddingOnly(bottom: 7),
           Row(
             children: [
               Text(
@@ -186,25 +200,8 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
                   ),
                 ),
               ),
-              GestureDetector(
-                onTap: widget.imagetrap,
-                child: Container(
-                  height: 30,
-                  width: 30,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(6),
-                    ),
-                    color: Colors.blue,
-                  ),
-                  child: Image.asset(
-                    widget.image ?? "",
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              )
             ],
-          ).paddingOnly(left: 10, right: 10, bottom: 5),
+          ).paddingOnly(left: 10, right: 10, bottom: 7),
           Container(
             padding: const EdgeInsets.only(left: 10, right: 10),
             child: Row(
@@ -214,7 +211,7 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
                 Expanded(
                   child: Text(
                     widget.address ?? '',
-                    style: AppCss.h3.copyWith(fontSize: 15),
+                    style: AppCss.poppins.copyWith(fontSize: 15),
                   ).paddingOnly(bottom: widget.amount == null ? 5 : 7),
                 ),
                 TextButton(
@@ -241,23 +238,12 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
           ),
           if (widget.header != "Pickup")
             Container(
-              padding: const EdgeInsets.only(left: 10, right: 10),
-              child: Row(
-                children: [
-                  Text(
-                    "Cash :",
-                    style: AppCss.h3,
-                  ),
-                  Text(
-                    widget.amount ?? "",
-                    style: AppCss.h3.copyWith(color: widget.amount == widget.amount1 ? Colors.green : Colors.red),
-                  ).paddingOnly(left: 15),
-                  Text(
-                    widget.amount1 ?? "",
-                    style: AppCss.h3.copyWith(color: widget.amount1 == widget.amount ? Colors.green : Colors.red),
-                  ).paddingOnly(left: 15),
-                ],
-              ).paddingOnly(bottom: 5),
+              child: widget.items,
+            ),
+          if (widget.imageShow != null)
+            GestureDetector(
+              onTap: widget.imagetrap,
+              child: widget.imageShow,
             ),
           Container(
             padding: const EdgeInsets.only(left: 10, right: 10),
@@ -293,33 +279,6 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
               ],
             ),
           ).paddingOnly(bottom: widget.header != "Pickup" ? 0 : 5),
-          for (int i = 1; i < widget.stopList!.length - 1; i++)
-            widget.header == "Pickup"
-                ? Container(
-                    padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-                    height: 50,
-                    child: Row(
-                      children: [
-                        Text(
-                          widget.stopList![i] == "Pickup"
-                              ? ""
-                              : widget.stopList![i] == "Drop"
-                                  ? ""
-                                  : widget.stopList![i] ?? '',
-                          style: AppCss.h3.copyWith(fontSize: 15),
-                        ).paddingOnly(right: 5),
-                        Text(
-                          widget.stopList![i] == "Pickup"
-                              ? ""
-                              : widget.stopList![i] == "Drop"
-                                  ? ""
-                                  : widget.shopNameList![i] ?? '',
-                          style: AppCss.h3.copyWith(fontSize: 15, color: Colors.blue),
-                        ),
-                      ],
-                    ),
-                  )
-                : Container(),
         ],
       ),
     ).paddingAll(8);
