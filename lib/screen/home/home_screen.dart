@@ -66,12 +66,13 @@ class HomeScreen extends StatelessWidget {
                       fit: BoxFit.fill,
                     ),
                     accountName: Text(
-                      homeController.userData != null ? homeController.userData['email'] : 'NA',
+                      homeController.userData != null ? homeController.userData['name'].toString() : 'NA',
+                      // "",
                       style: TextStyle(color: Colors.white),
                     ),
                     accountEmail: Text(
                       homeController.userData != null
-                          ? homeController.userData['type'] == 'admin'
+                          ? homeController.userData['type'] == 'order_manager'
                               ? 'Administrator'
                               : 'Manager'
                           : 'NA',

@@ -11,7 +11,9 @@ class ApiMethods {
   final String magicLink = "v3/login/magiclink/from/app";
   final String magicLinkVerify = "v3/login/magiclink";
 
-  final String businessCategories = "manager/businessCategories";
+  final String businessCategories = "manager/businessCategories"; ///// one
+
+  ///one
   final String getVendors = "manager/getVendors";
   final String area = "manager/area";
   final String route = "manager/route";
@@ -22,7 +24,7 @@ class ApiMethods {
   final String vendorGetDetails = "manager/vCodSettlement/vendors/getDetails";
   final String vendorDetails = "manager/vCodSettlement/vendors/vendorDetails";
   final String b2bRoute = "manager/getAreaByVendorId";
-  final String fetchVendorByBusinessCategoryId = "manager/fetchVendorByBusinessCategoryId";
+  final String fetchVendorByBusinessCategoryId = "manager/fetchVendorByBusinessCategoryId"; ////fetchVendorByBusinessCategoryId Order Apis.....
   final String getVendorB2COrders = "manager/vendorB2COrders";
   final String getGlobalAddressBySearch = "manager/getGlobalAddressBySearch";
   final String vehiclesNames = "manager/vehiclesNames";
@@ -37,9 +39,13 @@ class ApiMethods {
   final String sendOTPVendorCashSettlement = "manager/vCodSettlement/vendor/sendOTP";
   final String verifyOTPVendorCashSettlement = "manager/vCodSettlement/vendor/verify";
   final String updateVendorPackageDetails = "manager/updateVendorPackageDetails";
-
+  // Order Apis.......//
   final String orderDataUpdate = "manager/orderDataUpdate";
   final String shiftVendorOrderLocationsToPending = "manager/shiftVendorOrderLocationsToPending";
+  final String getVendorLastorder = "manager/getVendorLastOrderDetails"; // "vendorId","orderType",""
 
+  // COD Settlement Apis.......//
   final String vCodSettlementgetDetails = "manager/vCodSettlement/getDetails";
+  final String vCodSettlementsendOTP = "manager/vCodSettlement/sendOTP";
+  final String vCodSettlementverify = "manager/vCodSettlement/verify";
 }

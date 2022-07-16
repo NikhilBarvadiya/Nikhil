@@ -2,28 +2,31 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fw_manager/common/config.dart';
 import 'package:fw_manager/core/assets/index.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
+import 'package:fw_manager/model/api_data_class.dart';
 import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:location/location.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:fw_manager/core/theme/app_css.dart';
 
 class OrdersController extends GetxController {
   String selectedFilter = "Pending";
   TextEditingController txtSearchController = TextEditingController();
   bool isdragDrop = false;
   bool ordersFilter = true;
-  bool isSlider = true;
   bool start = true;
   bool findingRoute = true;
   bool isBounded = false;
   bool isContainsKey = false;
+  bool isLoading = false;
   List selectedOrderList = [];
   String startDateVendor = "";
   String endDateVendor = "";
@@ -36,6 +39,14 @@ class OrdersController extends GetxController {
   Set<Marker> markers = {};
   dynamic locationStatus;
   dynamic destinationIcon;
+
+  @override
+  void onInit() {
+    isdragDrop = false;
+    onOrdersApiCalling("");
+    fatchbusinessCategories();
+    super.onInit();
+  }
 
   List filters = [
     {
@@ -218,19 +229,50 @@ class OrdersController extends GetxController {
     return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
   }
 
-  onRecord(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
+  onRecord(int oldIndex, int newIndex, dynamic data) {
+    if (oldIndex == 0) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: const Text(
+          "pickup point cannot be changed!",
+          style: TextStyle(color: Colors.black),
+        ),
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(0),
+        backgroundColor: Colors.amber,
+      );
+    } else {
+      if (newIndex == 0) {
+        newIndex = 1;
+      }
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+      final item = data.removeAt(oldIndex);
+      data.insert(newIndex, item);
+      Get.defaultDialog(
+        title: "Location Drag and drop activeted..",
+        confirm: TextButton(
+          onPressed: () {
+            if (item != null) {
+              orderDataUpdate(data);
+              Get.back();
+            }
+          },
+          child: const Text("ok"),
+        ),
+        cancel: TextButton(
+          onPressed: () {
+            final item = data.removeAt(newIndex);
+            data.insert(oldIndex, item);
+            update();
+            Get.back();
+          },
+          child: const Text("Cancel"),
+        ),
+      );
     }
-    final item = selectedOrderList[0].removeAt(oldIndex);
-    selectedOrderList[0].insert(newIndex, item);
     update();
-  }
-
-  @override
-  void onInit() {
-    onOrdersApiCalling("");
-    super.onInit();
   }
 
   onChange(int i) {
@@ -288,10 +330,21 @@ class OrdersController extends GetxController {
   }
 
   onBack() {
-    isdragDrop = false;
-    Get.back();
-    isdragDrop = !isdragDrop;
+    if (isdragDrop == true) {
+      Get.back();
+    }
     update();
+  }
+
+  onBackDrop() {
+    if (isdragDrop == false) {
+      isdragDrop = true;
+    }
+    update();
+  }
+
+  onWillPopScope() {
+    onBackDrop();
   }
 
   void openEditDialog(dynamic data) {
@@ -299,14 +352,14 @@ class OrdersController extends GetxController {
       AlertDialog(
         title: const Text('Edit orders details'),
         actions: [
-          ListTile(
-            title: const Text("Edit"),
-            onTap: () {
-              Get.back();
-              Get.toNamed(AppRoutes.editOrdersScreen, arguments: data);
-              update();
-            },
-          ),
+          // ListTile(
+          //   title: const Text("Edit"),
+          //   onTap: () {
+          //     Get.back();
+          //     Get.toNamed(AppRoutes.editOrdersScreen, arguments: data);
+          //     update();
+          //   },
+          // ),
           ListTile(
             title: const Text("Drag And Drop"),
             onTap: () {
@@ -326,8 +379,9 @@ class OrdersController extends GetxController {
           ),
           ListTile(
             title: const Text("Add New"),
-            onTap: () {
+            onTap: () async {
               Get.back();
+              await orderDataUpdate(data);
               Get.toNamed(AppRoutes.newOrdersScreen);
               update();
             },
@@ -419,5 +473,349 @@ class OrdersController extends GetxController {
     }
 
     return show == "cash" ? cashToBeRecieved.toString() : receivedCash.toString();
+  }
+
+  orderDataUpdate(orderDetails) async {
+    try {
+      isLoading = true;
+      update();
+      var request = {
+        "selectedOrder": {
+          "_id": orderDetails["_id"],
+          "locations": orderDetails["locations"],
+        },
+      };
+      print(request);
+      APIDataClass response = await apis.call(
+        apiMethods.orderDataUpdate,
+        request,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+  }
+
+  /// New Orders Controller ///
+  String selectedOrder = "B2B Order";
+  bool isSlider = true;
+  bool isOpenTap = false;
+  bool isOpenOrder = false;
+  List selectedOrderTrueList = [];
+  List businessCategories = [];
+  List getVendorsList = [];
+  String isBusinessSelectedId = "";
+  String isBusinessSelected = "";
+  String isVendorsSelected = "";
+  String isVendorsSelectedId = "";
+
+  onOpenTap() {
+    isOpenTap = !isOpenTap;
+    update();
+  }
+
+  onCloseTap() {
+    isOpenOrder = !isOpenOrder;
+    update();
+  }
+
+  onNewSelectedOrders() {
+    if (selectedOrderTrueList.isNotEmpty) {
+      Get.toNamed(AppRoutes.newSelectedOrdersScreen);
+    } else {
+      Get.rawSnackbar(
+        title: null,
+        messageText: const Text(
+          "order address not selected!",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.deepOrange,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+    }
+    update();
+  }
+
+  onChangeOrder(int i) {
+    for (int a = 0; a < order.length; a++) {
+      if (a == i) {
+        order[a]["isActive"] = true;
+        selectedOrder = order[a]["title"];
+      } else {
+        order[a]["isActive"] = false;
+      }
+      onClear();
+    }
+    fatchbusinessCategories();
+    update();
+  }
+
+  onClear() {
+    isBusinessSelected = "";
+    isBusinessSelected = "";
+    isVendorsSelected = "";
+    isVendorsSelectedId = "";
+  }
+
+  List order = [
+    {
+      "title": "B2B Orders",
+      "isActive": true,
+    },
+    {
+      "title": "B2C Orders",
+      "isActive": false,
+    },
+  ];
+
+  List selectedAddress = [
+    for (int i = 1; i < 11; i++)
+      {
+        "shopName": "WELL NATURES HEALTH CARE $i",
+        "personName": "R27-1000$i",
+        "number": "9898849850",
+        "address": "R-27 KIMAVATI COMPLEX,SHOP NO.71,AT.KIM(EAST),TA.OLPAD,SURAT.",
+        "Vendor": "SHREE HARI PHARMA",
+        "selected": false,
+      }
+  ];
+
+  addToSelectedList(item) {
+    if (item != null) {
+      var index = selectedOrderTrueList.indexOf(item);
+      if (index == -1) {
+        selectedOrderTrueList.add(item);
+        update();
+      }
+      _autoSelector();
+    }
+  }
+
+  removeToSelectedList(item) {
+    if (item != null) {
+      Get.dialog(
+        AlertDialog(
+          title: Text(
+            'Remove',
+            style: AppCss.h1,
+          ),
+          content: Text(
+            'Do you remove this location?',
+            style: AppCss.h3,
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Ok"),
+              onPressed: () {
+                selectedOrderTrueList.remove(item);
+                _autoSelector();
+                Get.back();
+              },
+            ),
+            TextButton(
+              child: const Text("Close"),
+              onPressed: () => Get.back(),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  _autoSelector() {
+    for (int i = 0; i < selectedAddress.length; i++) {
+      var data = selectedOrderTrueList.where((element) => element['personName'] == selectedAddress[i]['personName']);
+      if (data.isNotEmpty) {
+        selectedAddress[i]['selected'] = true;
+      } else {
+        selectedAddress[i]['selected'] = false;
+      }
+      update();
+    }
+  }
+
+  shiftVendorOrderLocationsToPending() async {
+    try {
+      isLoading = true;
+      update();
+      var request = {
+        "vendorOrderStatusIds": {},
+      };
+      APIDataClass response = await apis.call(
+        apiMethods.shiftVendorOrderLocationsToPending,
+        request,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+  }
+
+  fatchbusinessCategories() async {
+    try {
+      var resData = await apis.call(
+        apiMethods.businessCategories,
+        {},
+        ApiType.post,
+      );
+      businessCategories = resData.data;
+      for (var element in businessCategories) {
+        if (selectedOrder == "B2B Order") {
+          if (element['title'] == "Pharmacy") {
+            isBusinessSelectedId = element['_id'];
+            isBusinessSelected = element['title'];
+            isOpenTap = true;
+            await fatchVendor("");
+            update();
+          }
+        } else {
+          if (element['title'] == "Food") {
+            isBusinessSelectedId = element['_id'];
+            isBusinessSelected = element['title'];
+            isOpenTap = true;
+            await fatchVendor("");
+            update();
+          }
+        }
+      }
+      update();
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+    }
+    update();
+  }
+
+  onBusinessSelected(String id, String name) async {
+    isBusinessSelectedId = id;
+    isBusinessSelected = name;
+    fatchVendor("");
+    if (isBusinessSelected != "") {
+      // onOpenOrder();
+      Get.back();
+    } else {
+      Get.snackbar(
+        "Error",
+        "Please try again ?",
+        backgroundColor: Colors.white,
+        colorText: Colors.black,
+      );
+    }
+    update();
+  }
+
+  fatchVendor(String search) async {
+    try {
+      var resData = await apis.call(
+        apiMethods.fetchVendorByBusinessCategoryId,
+        {
+          "businessCategoryId": isBusinessSelectedId,
+          "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
+        },
+        ApiType.post,
+      );
+      if (resData.isSuccess == true && resData.data != 0) {
+        getVendorsList = resData.data;
+      }
+      update();
+    } catch (e) {
+      return null;
+    }
+    update();
+  }
+
+  onVendorsSelected(String name, String id) async {
+    isVendorsSelected = name;
+    print("test");
+    if (isBusinessSelected != "") {
+      isVendorsSelectedId = id;
+      Get.back();
+      // onOpenOrder();
+    } else {
+      Get.snackbar(
+        "Error",
+        "Please select business categories ?",
+        backgroundColor: Colors.white,
+        colorText: Colors.black,
+      );
+    }
+    update();
   }
 }

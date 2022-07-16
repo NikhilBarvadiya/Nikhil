@@ -12,7 +12,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 class OrdersDetailsScreen extends StatefulWidget {
   const OrdersDetailsScreen({Key? key}) : super(key: key);
-
   @override
   State<OrdersDetailsScreen> createState() => _OrdersDetailsScreenState();
 }
@@ -33,7 +32,7 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
     return GetBuilder<OrdersController>(
       builder: (_) => WillPopScope(
         onWillPop: () async {
-          return ordersController.isSlider;
+          return ordersController.onWillPopScope();
         },
         child: Scaffold(
           appBar: AppBar(
@@ -41,7 +40,7 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
             foregroundColor: Colors.white,
             title: Column(
               children: [
-                Text(ordersController.isdragDrop ? data["orderNo"] ?? "Orders Details" : "Drag and Drop on"),
+                Text(ordersController.isdragDrop != false ? data["orderNo"] ?? "Orders Details" : "Drag and Drop on"),
                 Text(
                   data["updatedAt"] != null ? data["updatedAt"].split("T").first.toString() : "",
                   style: AppCss.h2.copyWith(fontSize: 13),
@@ -50,7 +49,7 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
             ),
             centerTitle: true,
             leading: IconButton(
-              onPressed: () => ordersController.onBack(),
+              onPressed: () => ordersController.isdragDrop ? ordersController.onBack() : ordersController.onBackDrop(),
               icon: const Icon(Icons.arrow_back),
             ),
             actions: [
@@ -106,8 +105,12 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
                       key: Key("$index"),
                       child: data["locations"] != null
                           ? PickupOrdersCard(
-                              header: data["locations"][index]["type"].toString().toUpperCase().capitalizeFirst,
-                              // time: ordersController.orderList[index]["time"],
+                              header: index == 0
+                                  ? data["locations"][index]["type"].toString().toUpperCase().capitalizeFirst
+                                  : index == data["locations"].length - 1
+                                      ? "Drop"
+                                      : "Stop",
+                              // time: ordersController.locationStatus["date"] != "" ? ordersController.locationStatus["date"] : "0",
                               shopName: data["locations"][index]["location"]["name"].toString().toUpperCase().capitalizeFirst,
                               personName: data["locations"][index]["location"]["person"].toString() != "" ? data["locations"][index]["location"]["person"].toString().toUpperCase().capitalizeFirst : "PersonName",
                               callIcon: Icons.call,
@@ -131,6 +134,7 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
                               note: data["locations"][index]["package"]["anyNote"].toString() != "" ? "Notes: " + data["locations"][index]["package"]["anyNote"].toString().toUpperCase().capitalizeFirst.toString() : "Notes : ....?",
                               itemList: data["locations"][index]["package"]["itemList"].length.toString(),
                               status: ordersController.locationStatus != null ? ordersController.locationStatus["status"].toString() : "Pending",
+                              accpeted: ordersController.locationStatus != null && ordersController.filters[1]["label"] == "Accepted" ? "Accepted" : "",
                               items: ordersController.hasVendorData(data["locations"][index]["package"]["itemList"])
                                   ? Column(
                                       mainAxisSize: MainAxisSize.min,
@@ -217,7 +221,7 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
                           : null,
                     );
                   },
-                  onReorder: (int oldIndex, int newIndex) => ordersController.onRecord(oldIndex, newIndex),
+                  onReorder: (int oldIndex, int newIndex) => ordersController.onRecord(oldIndex, newIndex, data["locations"]),
                 ),
               ),
             ],

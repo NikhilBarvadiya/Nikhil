@@ -11,8 +11,8 @@ class EditOrdersController extends GetxController {
 
   @override
   void onInit() {
-    editArguments = Get.arguments;
-    orderDataUpdate();
+    // editArguments = Get.arguments;
+    // orderDataUpdate();
     super.onInit();
   }
 

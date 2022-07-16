@@ -1,10 +1,9 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fw_manager/controller/app_controller.dart';
 import 'package:fw_manager/controller/common_controller.dart';
-import 'package:fw_manager/controller/new_orders_controller.dart';
+import 'package:fw_manager/controller/orders_controller.dart';
 import 'package:fw_manager/core/theme/index.dart';
 import 'package:fw_manager/core/widgets/common_bottom_sheet/common_bottom_sheet.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_button.dart';
@@ -14,15 +13,15 @@ import 'package:get/get.dart';
 
 class NewOrdersScreen extends StatelessWidget {
   NewOrdersScreen({Key? key}) : super(key: key);
-  NewOrderController newOrderController = Get.put(NewOrderController());
+  OrdersController ordersController = Get.put(OrdersController());
   final CommonController _commonController = Get.find();
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<NewOrderController>(
+    return GetBuilder<OrdersController>(
       builder: (_) => WillPopScope(
         onWillPop: () async {
-          return newOrderController.isSlider;
+          return ordersController.isSlider;
         },
         child: Scaffold(
           appBar: AppBar(
@@ -32,15 +31,15 @@ class NewOrdersScreen extends StatelessWidget {
           ),
           body: Column(
             children: [
-              if (newOrderController.isOpenOrder == false)
+              if (ordersController.isOpenOrder == false)
                 Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        for (int i = 0; i < newOrderController.order.length; i++)
+                        for (int i = 0; i < ordersController.order.length; i++)
                           GestureDetector(
-                            onTap: () => newOrderController.onChangeOrder(i),
+                            onTap: () => ordersController.onChangeOrder(i),
                             child: AnimatedContainer(
                               height: 45,
                               width: Get.width * 0.45,
@@ -51,15 +50,15 @@ class NewOrdersScreen extends StatelessWidget {
                                   Radius.circular(8),
                                 ),
                                 border: Border.all(
-                                  color: newOrderController.order[i]["isActive"] ? Colors.transparent : AppController().appTheme.primary1.withOpacity(.8),
+                                  color: ordersController.order[i]["isActive"] ? Colors.transparent : AppController().appTheme.primary1.withOpacity(.8),
                                   width: 1,
                                 ),
-                                color: newOrderController.order[i]["isActive"] ? AppController().appTheme.primary1.withOpacity(.8) : Colors.white,
+                                color: ordersController.order[i]["isActive"] ? AppController().appTheme.primary1.withOpacity(.8) : Colors.white,
                               ),
                               child: Text(
-                                newOrderController.order[i]["order"],
+                                ordersController.order[i]["title"],
                                 style: AppCss.h1.copyWith(
-                                  color: newOrderController.order[i]["isActive"] ? Colors.white : AppController().appTheme.primary1.withOpacity(.8),
+                                  color: ordersController.order[i]["isActive"] ? Colors.white : AppController().appTheme.primary1.withOpacity(.8),
                                 ),
                               ),
                             ),
@@ -75,9 +74,9 @@ class NewOrdersScreen extends StatelessWidget {
                           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
                         ),
                         IconButton(
-                          onPressed: () => newOrderController.onOpenTap(),
+                          onPressed: () => ordersController.onOpenTap(),
                           icon: Icon(
-                            newOrderController.isOpenTap ? Icons.arrow_drop_down : Icons.arrow_drop_up_sharp,
+                            ordersController.isOpenTap ? Icons.arrow_drop_down : Icons.arrow_drop_up_sharp,
                           ),
                         ),
                       ],
@@ -88,7 +87,7 @@ class NewOrdersScreen extends StatelessWidget {
                     const SizedBox(height: 5),
                   ],
                 ),
-              if (newOrderController.isOpenOrder == false && newOrderController.isOpenTap == true)
+              if (ordersController.isOpenOrder == false && ordersController.isOpenTap == true)
                 Column(
                   children: [
                     GestureDetector(
@@ -98,12 +97,14 @@ class NewOrdersScreen extends StatelessWidget {
                           widget: SearchableListView(
                             isLive: false,
                             isOnSearch: true,
-                            itemList: const [],
+                            itemList: ordersController.businessCategories,
                             bindText: 'title',
                             bindValue: '_id',
                             labelText: 'Select category',
                             hintText: 'Please Select',
-                            onSelect: (val, text) {},
+                            onSelect: (val, text) {
+                              ordersController.onBusinessSelected(val, text);
+                            },
                           ),
                         );
                       },
@@ -129,9 +130,9 @@ class NewOrdersScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Expanded(
+                                Expanded(
                                   child: Text(
-                                    'Please Select',
+                                    ordersController.isBusinessSelected != '' ? ordersController.isBusinessSelected : 'Please Select',
                                   ),
                                 ),
                                 Icon(
@@ -152,12 +153,17 @@ class NewOrdersScreen extends StatelessWidget {
                           widget: SearchableListView(
                             isLive: false,
                             isOnSearch: true,
-                            itemList: const [],
+                            fetchApi: (search) async {
+                              return ordersController.fatchVendor(search);
+                            },
+                            itemList: ordersController.getVendorsList,
                             bindText: 'title',
                             bindValue: '_id',
                             labelText: 'Select vendor',
                             hintText: 'Please Select',
-                            onSelect: (val, text) {},
+                            onSelect: (val, text) {
+                              ordersController.onVendorsSelected(val, text);
+                            },
                           ),
                         );
                       },
@@ -200,83 +206,80 @@ class NewOrdersScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Orders address",
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
-                  ),
-                  IconButton(
-                    onPressed: () => newOrderController.onCloseTap(),
-                    icon: Icon(
-                      newOrderController.isOpenOrder ? Icons.arrow_drop_down : Icons.arrow_drop_up_sharp,
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.only(top: 10),
-                  children: [
-                    ...newOrderController.selectedAddress.map(
-                      (e) {
-                        int index = newOrderController.selectedAddress.indexOf(e);
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 20,
-                              alignment: Alignment.center,
-                              margin: const EdgeInsets.only(top: 5),
-                              child: Text(
-                                "${index + 1}",
-                                style: AppCss.h3.copyWith(
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: OrderAddressCard(
-                                addressHeder: e["shopName"],
-                                personName: e["personName"] + "\t\t\t(${e["number"]})",
-                                vendor: "vendor : ",
-                                vendorName: e["Vendor"],
-                                onTap: () {
-                                  if (kDebugMode) {
-                                    print("Tapping");
-                                  }
-                                  newOrderController.addToSelectedList(e);
-                                },
-                                deleteIcon: e['selected'] == null
-                                    ? Icons.add
-                                    : e['selected'] == true
-                                        ? Icons.check
-                                        : Icons.add,
-                                icon: e['selected'] == null
-                                    ? false
-                                    : e['selected'] == true
-                                        ? true
-                                        : false,
-                                deleteIconColor: Colors.black,
-                                deleteIconBoxColor: AppController().appTheme.green,
-                                cardColors: e['selected'] == true ? Colors.green[100] : Colors.white,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ).toList(),
-                  ],
-                ),
-              ),
-              commonButton(
-                onTap: () {
-                  newOrderController.onNewSelectedOrders();
-                },
-                text: "Selected location (${newOrderController.selectedOrderTrueList.length})",
-                height: 50.0,
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     const Text(
+              //       "Orders address",
+              //       style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+              //     ),
+              //     IconButton(
+              //       onPressed: () => ordersController.onCloseTap(),
+              //       icon: Icon(
+              //         ordersController.isOpenOrder ? Icons.arrow_drop_down : Icons.arrow_drop_up_sharp,
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              // Expanded(
+              //   child: ListView(
+              //     padding: const EdgeInsets.only(top: 10),
+              //     children: [
+              //       ...ordersController.selectedAddress.map(
+              //         (e) {
+              //           int index = ordersController.selectedAddress.indexOf(e);
+              //           return Row(
+              //             crossAxisAlignment: CrossAxisAlignment.start,
+              //             children: [
+              //               Container(
+              //                 height: 20,
+              //                 alignment: Alignment.center,
+              //                 margin: const EdgeInsets.only(top: 5),
+              //                 child: Text(
+              //                   "${index + 1}",
+              //                   style: AppCss.h3.copyWith(
+              //                     color: Colors.black,
+              //                   ),
+              //                 ),
+              //               ),
+              //               Expanded(
+              //                 child: OrderAddressCard(
+              //                   addressHeder: e["shopName"],
+              //                   personName: e["personName"] + "\t\t\t(${e["number"]})",
+              //                   vendor: "vendor : ",
+              //                   vendorName: e["Vendor"],
+              //                   onTap: () {
+              //                     ordersController.addToSelectedList(e);
+              //                   },
+              //                   deleteIcon: e['selected'] == null
+              //                       ? Icons.add
+              //                       : e['selected'] == true
+              //                           ? Icons.check
+              //                           : Icons.add,
+              //                   icon: e['selected'] == null
+              //                       ? false
+              //                       : e['selected'] == true
+              //                           ? true
+              //                           : false,
+              //                   deleteIconColor: Colors.black,
+              //                   deleteIconBoxColor: AppController().appTheme.green,
+              //                   cardColors: e['selected'] == true ? Colors.green[100] : Colors.white,
+              //                 ),
+              //               ),
+              //             ],
+              //           );
+              //         },
+              //       ).toList(),
+              //     ],
+              //   ),
+              // ),
+              // commonButton(
+              //   onTap: () {
+              //     ordersController.onNewSelectedOrders();
+              //   },
+              //   text: "Selected location (${ordersController.selectedOrderTrueList.length})",
+              //   height: 50.0,
+              // ),
             ],
           ).paddingAll(10),
         ),

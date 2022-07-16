@@ -1,19 +1,19 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:fw_manager/controller/new_orders_controller.dart';
+import 'package:fw_manager/controller/orders_controller.dart';
 import 'package:fw_manager/core/theme/index.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_button.dart';
 import 'package:fw_manager/core/widgets/common_widgets/new_order_card.dart';
 import 'package:get/get.dart';
 
 class NewSelectedOrdersScreen extends StatelessWidget {
-  NewOrderController newOrderController = Get.put(NewOrderController());
+  OrdersController ordersController = Get.put(OrdersController());
   NewSelectedOrdersScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<NewOrderController>(
+    return GetBuilder<OrdersController>(
       builder: (_) => Scaffold(
         appBar: AppBar(
           elevation: 1,
@@ -36,9 +36,9 @@ class NewSelectedOrdersScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.only(top: 10),
                   children: [
-                    ...newOrderController.selectedOrderTrueList.map(
+                    ...ordersController.selectedOrderTrueList.map(
                       (e) {
-                        int index = newOrderController.selectedOrderTrueList.indexOf(e);
+                        int index = ordersController.selectedOrderTrueList.indexOf(e);
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -60,7 +60,7 @@ class NewSelectedOrdersScreen extends StatelessWidget {
                                 vendorName: e["Vendor"],
                                 address: e["address"],
                                 onTap: () {
-                                  newOrderController.removeToSelectedList(e);
+                                  ordersController.removeToSelectedList(e);
                                 },
                                 deleteIcon: Icons.close,
                                 deleteIconColor: Colors.redAccent,

@@ -19,6 +19,7 @@ class PickupOrdersCard extends StatefulWidget {
   final String? status;
   final String? amount;
   final String? amount1;
+  final String? accpeted;
   final int? index;
   // final List? stopList;
   // final List? shopNameList;
@@ -38,6 +39,7 @@ class PickupOrdersCard extends StatefulWidget {
     this.personName,
     this.textClick,
     this.callIcon,
+    this.accpeted,
     this.number,
     this.address,
     this.otp,
@@ -254,7 +256,7 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
                   style: AppCss.h3.copyWith(fontSize: 15),
                 ).paddingOnly(right: 2),
                 const Spacer(),
-                if (widget.header != "Pickup")
+                if (widget.header != "Pickup" && widget.accpeted != "Accepted")
                   GestureDetector(
                     onTap: widget.editClick,
                     child: Container(

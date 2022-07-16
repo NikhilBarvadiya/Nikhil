@@ -18,8 +18,6 @@ import 'package:fw_manager/screen/settlement/return_settlement/return_settlement
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-  dynamic loginData = Get.arguments;
-
   dynamic userData;
   bool isSlider = false;
   int selectedIndex = 1;
