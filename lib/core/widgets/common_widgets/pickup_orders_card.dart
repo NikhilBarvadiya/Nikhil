@@ -30,6 +30,7 @@ class PickupOrdersCard extends StatefulWidget {
   final void Function()? imagetrap;
   final dynamic callIcon;
   final dynamic imageShow;
+  final bool? isEditable;
 
   const PickupOrdersCard({
     Key? key,
@@ -54,6 +55,7 @@ class PickupOrdersCard extends StatefulWidget {
     this.itemList,
     this.index,
     this.items,
+    this.isEditable,
   }) : super(key: key);
 
   @override
@@ -248,7 +250,7 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
               child: widget.imageShow,
             ),
           Container(
-            padding: const EdgeInsets.only(left: 10, right: 10),
+            padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
             child: Row(
               children: [
                 Text(
@@ -257,27 +259,28 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
                 ).paddingOnly(right: 2),
                 const Spacer(),
                 if (widget.header != "Pickup" && widget.accpeted != "Accepted")
-                  GestureDetector(
-                    onTap: widget.editClick,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(6),
+                  if (widget.isEditable == null || widget.isEditable == true)
+                    GestureDetector(
+                      onTap: widget.editClick,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(6),
+                          ),
+                          color: Theme.of(context).primaryColor.withOpacity(0.2),
                         ),
-                        color: Theme.of(context).primaryColor.withOpacity(0.2),
+                        padding: const EdgeInsets.only(top: 2, bottom: 4, left: 10, right: 10),
+                        child: Row(
+                          children: [
+                            Icon(FontAwesomeIcons.edit, size: 12, color: AppController().appTheme.primary1.withOpacity(0.5)),
+                            Text(
+                              "Edit",
+                              style: AppCss.h3.copyWith(fontSize: 15, color: AppController().appTheme.primary1),
+                            ).paddingOnly(top: 4, left: 4),
+                          ],
+                        ),
                       ),
-                      padding: const EdgeInsets.only(top: 2, bottom: 4, left: 10, right: 10),
-                      child: Row(
-                        children: [
-                          Icon(FontAwesomeIcons.edit, size: 12, color: AppController().appTheme.primary1.withOpacity(0.5)),
-                          Text(
-                            "Edit",
-                            style: AppCss.h3.copyWith(fontSize: 15, color: AppController().appTheme.primary1),
-                          ).paddingOnly(top: 4, left: 4),
-                        ],
-                      ),
-                    ),
-                  ).paddingOnly(bottom: 5),
+                    )
               ],
             ),
           ).paddingOnly(bottom: widget.header != "Pickup" ? 0 : 5),

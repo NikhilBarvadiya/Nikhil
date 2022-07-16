@@ -20,7 +20,7 @@ import 'package:fw_manager/core/theme/app_css.dart';
 class OrdersController extends GetxController {
   String selectedFilter = "Pending";
   TextEditingController txtSearchController = TextEditingController();
-  bool isdragDrop = false;
+  bool isdragDrop = true;
   bool ordersFilter = true;
   bool start = true;
   bool findingRoute = true;
@@ -42,7 +42,7 @@ class OrdersController extends GetxController {
 
   @override
   void onInit() {
-    isdragDrop = false;
+    isdragDrop = true;
     onOrdersApiCalling("");
     fatchbusinessCategories();
     super.onInit();
@@ -230,6 +230,7 @@ class OrdersController extends GetxController {
   }
 
   onRecord(int oldIndex, int newIndex, dynamic data) {
+    var locations = data["locations"];
     if (oldIndex == 0) {
       Get.rawSnackbar(
         title: null,
@@ -242,33 +243,39 @@ class OrdersController extends GetxController {
         backgroundColor: Colors.amber,
       );
     } else {
-      if (newIndex == 0) {
-        newIndex = 1;
-      }
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
-      }
-      final item = data.removeAt(oldIndex);
-      data.insert(newIndex, item);
       Get.defaultDialog(
-        title: "Location Drag and drop activeted..",
-        confirm: TextButton(
-          onPressed: () {
-            if (item != null) {
-              orderDataUpdate(data);
-              Get.back();
-            }
-          },
-          child: const Text("ok"),
+        radius: 4,
+        barrierDismissible: false,
+        title: "",
+        content: const Text(
+          "Do you really want to re-arrange the location?",
+          textAlign: TextAlign.center,
         ),
-        cancel: TextButton(
-          onPressed: () {
-            final item = data.removeAt(newIndex);
-            data.insert(oldIndex, item);
+        confirm: TextButton(
+          onPressed: () async {
+            if (newIndex == 0) {
+              newIndex = 1;
+            }
+            if (oldIndex < newIndex) {
+              newIndex -= 1;
+            }
+            final item = locations.removeAt(oldIndex);
+            locations.insert(newIndex, item);
+            data["locations"] = locations;
             update();
             Get.back();
           },
-          child: const Text("Cancel"),
+          child: const Text("Yes"),
+        ),
+        cancel: TextButton(
+          onPressed: () {
+            final item = locations.removeAt(newIndex);
+            locations.insert(oldIndex, item);
+            data["locations"] = locations;
+            update();
+            Get.back();
+          },
+          child: const Text("No"),
         ),
       );
     }
@@ -361,15 +368,15 @@ class OrdersController extends GetxController {
           //   },
           // ),
           ListTile(
-            title: const Text("Drag And Drop"),
+            title: const Text("Drag & drop"),
             onTap: () {
-              isdragDrop = !isdragDrop;
+              isdragDrop = false;
               update();
               Get.back();
             },
           ),
           ListTile(
-            title: const Text("Send To Driver"),
+            title: const Text("Send to driver"),
             onTap: () async {
               String link = "https://wa.me/916357017016";
               // ignore: deprecated_member_use
@@ -381,7 +388,6 @@ class OrdersController extends GetxController {
             title: const Text("Add New"),
             onTap: () async {
               Get.back();
-              await orderDataUpdate(data);
               Get.toNamed(AppRoutes.newOrdersScreen);
               update();
             },
@@ -400,6 +406,8 @@ class OrdersController extends GetxController {
 
   fatchOrders(type, search) async {
     try {
+      isLoading = true;
+      update();
       var resData = await apis.call(
         apiMethods.orders,
         {
@@ -413,11 +421,16 @@ class OrdersController extends GetxController {
         },
         ApiType.post,
       );
+      isLoading = false;
+      update();
       if (resData.isSuccess == true && resData.data != 0) {
         selectedOrderList = resData.data["orders"]["docs"];
       }
     } catch (e) {
       log("Error orders not faound");
+    } finally {
+      isLoading = false;
+      update();
     }
     update();
   }
@@ -485,13 +498,15 @@ class OrdersController extends GetxController {
           "locations": orderDetails["locations"],
         },
       };
-      print(request);
       APIDataClass response = await apis.call(
         apiMethods.orderDataUpdate,
         request,
         ApiType.post,
       );
       if (response.isSuccess && response.data != 0) {
+        orderDetails = response.data;
+        isdragDrop = true;
+        update();
         Get.rawSnackbar(
           title: null,
           messageText: Text(
@@ -528,6 +543,9 @@ class OrdersController extends GetxController {
         borderRadius: 0,
         margin: const EdgeInsets.all(0),
       );
+      isLoading = false;
+      update();
+    } finally {
       isLoading = false;
       update();
     }
@@ -803,7 +821,6 @@ class OrdersController extends GetxController {
 
   onVendorsSelected(String name, String id) async {
     isVendorsSelected = name;
-    print("test");
     if (isBusinessSelected != "") {
       isVendorsSelectedId = id;
       Get.back();

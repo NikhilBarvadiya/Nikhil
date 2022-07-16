@@ -157,7 +157,7 @@ class NewOrdersScreen extends StatelessWidget {
                               return ordersController.fatchVendor(search);
                             },
                             itemList: ordersController.getVendorsList,
-                            bindText: 'title',
+                            bindText: 'name',
                             bindValue: '_id',
                             labelText: 'Select vendor',
                             hintText: 'Please Select',
