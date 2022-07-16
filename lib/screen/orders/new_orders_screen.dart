@@ -27,7 +27,23 @@ class NewOrdersScreen extends StatelessWidget {
           appBar: AppBar(
             elevation: 1,
             foregroundColor: Colors.white,
+            backgroundColor: ordersController.isNewAdd ? Theme.of(context).primaryColor : Colors.amber,
             title: const Text("New Orders"),
+            leading: IconButton(
+              onPressed: () => ordersController.onOrderBack(),
+              icon: const Icon(Icons.arrow_back_outlined),
+            ),
+            actions: [
+              MaterialButton(
+                onPressed: () => ordersController.onNewAdd(),
+                child: const Text(
+                  "NEW ADD",
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
           body: Column(
             children: [
@@ -189,9 +205,9 @@ class NewOrdersScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Expanded(
+                                Expanded(
                                   child: Text(
-                                    'Please Select',
+                                    ordersController.isVendorsSelectedId != "" ? ordersController.isVendorsSelectedId : 'Please Select',
                                   ),
                                 ),
                                 Icon(
@@ -206,21 +222,22 @@ class NewOrdersScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //   children: [
-              //     const Text(
-              //       "Orders address",
-              //       style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
-              //     ),
-              //     IconButton(
-              //       onPressed: () => ordersController.onCloseTap(),
-              //       icon: Icon(
-              //         ordersController.isOpenOrder ? Icons.arrow_drop_down : Icons.arrow_drop_up_sharp,
-              //       ),
-              //     ),
-              //   ],
-              // ),
+              if (ordersController.isBusinessSelected != '' && ordersController.isVendorsSelectedId != '')
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Orders address",
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+                    ),
+                    IconButton(
+                      onPressed: () => ordersController.onCloseTap(),
+                      icon: Icon(
+                        ordersController.isOpenOrder ? Icons.arrow_drop_down : Icons.arrow_drop_up_sharp,
+                      ),
+                    ),
+                  ],
+                ),
               // Expanded(
               //   child: ListView(
               //     padding: const EdgeInsets.only(top: 10),

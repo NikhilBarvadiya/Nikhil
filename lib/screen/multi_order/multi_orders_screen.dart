@@ -160,7 +160,7 @@ class _MultiOrdersScreenState extends State<MultiOrdersScreen> {
                           labelText: 'Vendor',
                           hintText: 'Please Select',
                           onSelect: (val, text) {
-                            multiOrdersController.onVendorsSelected(val, text);
+                            multiOrdersController.order[0]['isActive'] == true ? multiOrdersController.onVendorsSelected(val, text) : multiOrdersController.onB2CVendorsSelected(val, text);
                           },
                         ),
                       );

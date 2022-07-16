@@ -553,18 +553,21 @@ class OrdersController extends GetxController {
 
   /// New Orders Controller ///
   String selectedOrder = "B2B Order";
-  bool isSlider = true;
+  bool isSlider = false;
   bool isOpenTap = false;
   bool isOpenOrder = false;
+  bool isNewAdd = true;
   List selectedOrderTrueList = [];
   List businessCategories = [];
   List getVendorsList = [];
+  List getVendorLastorderList = [];
   String isBusinessSelectedId = "";
   String isBusinessSelected = "";
   String isVendorsSelected = "";
   String isVendorsSelectedId = "";
 
   onOpenTap() {
+    onClear();
     isOpenTap = !isOpenTap;
     update();
   }
@@ -609,9 +612,22 @@ class OrdersController extends GetxController {
 
   onClear() {
     isBusinessSelected = "";
-    isBusinessSelected = "";
+    isBusinessSelectedId = "";
     isVendorsSelected = "";
     isVendorsSelectedId = "";
+    update();
+  }
+
+  onOrderBack() {
+    if (isBusinessSelected != "" && isBusinessSelectedId != "" && isVendorsSelected != "" && isVendorsSelectedId != "") {
+      onClear();
+      isNewAdd = true;
+      isOpenOrder = false;
+    } else {
+      isNewAdd = true;
+      Get.back();
+    }
+    update();
   }
 
   List order = [
@@ -625,17 +641,215 @@ class OrdersController extends GetxController {
     },
   ];
 
-  List selectedAddress = [
-    for (int i = 1; i < 11; i++)
-      {
-        "shopName": "WELL NATURES HEALTH CARE $i",
-        "personName": "R27-1000$i",
-        "number": "9898849850",
-        "address": "R-27 KIMAVATI COMPLEX,SHOP NO.71,AT.KIM(EAST),TA.OLPAD,SURAT.",
-        "Vendor": "SHREE HARI PHARMA",
-        "selected": false,
+  // List selectedAddress = [
+  //   for (int i = 1; i < 11; i++)
+  //     {
+  //       "shopName": "WELL NATURES HEALTH CARE $i",
+  //       "personName": "R27-1000$i",
+  //       "number": "9898849850",
+  //       "address": "R-27 KIMAVATI COMPLEX,SHOP NO.71,AT.KIM(EAST),TA.OLPAD,SURAT.",
+  //       "Vendor": "SHREE HARI PHARMA",
+  //       "selected": false,
+  //     }
+  // ];
+
+  // shiftVendorOrderLocationsToPending() async {
+  //   try {
+  //     isLoading = true;
+  //     update();
+  //     var request = {
+  //       "vendorOrderStatusIds": {},
+  //     };
+  //     APIDataClass response = await apis.call(
+  //       apiMethods.shiftVendorOrderLocationsToPending,
+  //       request,
+  //       ApiType.post,
+  //     );
+  //     if (response.isSuccess && response.data != 0) {
+  //       Get.rawSnackbar(
+  //         title: null,
+  //         messageText: Text(
+  //           response.message!,
+  //           style: const TextStyle(color: Colors.white),
+  //         ),
+  //         backgroundColor: Colors.green,
+  //         snackPosition: SnackPosition.TOP,
+  //         borderRadius: 0,
+  //         margin: const EdgeInsets.all(0),
+  //       );
+  //     } else {
+  //       Get.rawSnackbar(
+  //         title: null,
+  //         messageText: Text(
+  //           response.message!,
+  //           style: const TextStyle(color: Colors.black),
+  //         ),
+  //         backgroundColor: Colors.amber,
+  //         snackPosition: SnackPosition.TOP,
+  //         borderRadius: 0,
+  //         margin: const EdgeInsets.all(0),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     Get.rawSnackbar(
+  //       title: null,
+  //       messageText: Text(
+  //         e.toString(),
+  //         style: const TextStyle(color: Colors.white),
+  //       ),
+  //       backgroundColor: Colors.redAccent,
+  //       snackPosition: SnackPosition.TOP,
+  //       borderRadius: 0,
+  //       margin: const EdgeInsets.all(0),
+  //     );
+  //     isLoading = false;
+  //     update();
+  //   }
+  // }
+
+  fatchbusinessCategories() async {
+    try {
+      var resData = await apis.call(
+        apiMethods.businessCategories,
+        {},
+        ApiType.post,
+      );
+      businessCategories = resData.data;
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
       }
-  ];
+    }
+    update();
+  }
+
+  onBusinessSelected(String id, String name) async {
+    isBusinessSelectedId = id;
+    isBusinessSelected = name;
+    fatchVendor("");
+    if (isBusinessSelected != "") {
+      onOpenOrder();
+      Get.back();
+    } else {
+      Get.snackbar(
+        "Error",
+        "Please try again ?",
+        backgroundColor: Colors.white,
+        colorText: Colors.black,
+      );
+    }
+    update();
+  }
+
+  fatchVendor(String search) async {
+    try {
+      var resData = await apis.call(
+        apiMethods.fetchVendorByBusinessCategoryId,
+        {
+          "businessCategoryId": isBusinessSelectedId,
+          "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
+        },
+        ApiType.post,
+      );
+      if (resData.isSuccess == true && resData.data != 0) {
+        getVendorsList = resData.data;
+      }
+      update();
+    } catch (e) {
+      return null;
+    }
+    update();
+  }
+
+  onVendorsSelected(String name, String id) async {
+    isVendorsSelected = name;
+    if (isBusinessSelected != "") {
+      isVendorsSelectedId = id;
+      Get.back();
+      onOpenOrder();
+    } else {
+      Get.snackbar(
+        "Error",
+        "Please select business categories ?",
+        backgroundColor: Colors.white,
+        colorText: Colors.black,
+      );
+    }
+    update();
+  }
+
+  /// Peanding Apicalling......///
+  vendorOrderMergeByBusinessCategoryId() async {}
+
+  ///Add New ApiCalling.......///
+
+  getVendorLastorder() async {
+    try {
+      isLoading = true;
+      update();
+      var request = {
+        "vendorId": isVendorsSelected,
+        "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
+      };
+      APIDataClass response = await apis.call(
+        apiMethods.getVendorLastorder,
+        request,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        getVendorLastorderList = response.data;
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+    isLoading = false;
+    update();
+  }
+
+  onOpenOrder() async {
+    if (isBusinessSelected != "" && isVendorsSelected != "") {
+      isOpenOrder = true;
+      await getVendorLastorder();
+      _autoSelector();
+    } else {
+      isOpenOrder = false;
+    }
+  }
 
   addToSelectedList(item) {
     if (item != null) {
@@ -680,159 +894,19 @@ class OrdersController extends GetxController {
   }
 
   _autoSelector() {
-    for (int i = 0; i < selectedAddress.length; i++) {
-      var data = selectedOrderTrueList.where((element) => element['personName'] == selectedAddress[i]['personName']);
+    for (int i = 0; i < getVendorLastorderList.length; i++) {
+      var data = selectedOrderTrueList.where((element) => element['_id'] == getVendorLastorderList[i]['_id']);
       if (data.isNotEmpty) {
-        selectedAddress[i]['selected'] = true;
+        getVendorLastorderList[i]['selected'] = true;
       } else {
-        selectedAddress[i]['selected'] = false;
+        getVendorLastorderList[i]['selected'] = false;
       }
       update();
     }
   }
 
-  shiftVendorOrderLocationsToPending() async {
-    try {
-      isLoading = true;
-      update();
-      var request = {
-        "vendorOrderStatusIds": {},
-      };
-      APIDataClass response = await apis.call(
-        apiMethods.shiftVendorOrderLocationsToPending,
-        request,
-        ApiType.post,
-      );
-      if (response.isSuccess && response.data != 0) {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      } else {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.black),
-          ),
-          backgroundColor: Colors.amber,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      }
-    } catch (e) {
-      Get.rawSnackbar(
-        title: null,
-        messageText: Text(
-          e.toString(),
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.redAccent,
-        snackPosition: SnackPosition.TOP,
-        borderRadius: 0,
-        margin: const EdgeInsets.all(0),
-      );
-      isLoading = false;
-      update();
-    }
-  }
-
-  fatchbusinessCategories() async {
-    try {
-      var resData = await apis.call(
-        apiMethods.businessCategories,
-        {},
-        ApiType.post,
-      );
-      businessCategories = resData.data;
-      for (var element in businessCategories) {
-        if (selectedOrder == "B2B Order") {
-          if (element['title'] == "Pharmacy") {
-            isBusinessSelectedId = element['_id'];
-            isBusinessSelected = element['title'];
-            isOpenTap = true;
-            await fatchVendor("");
-            update();
-          }
-        } else {
-          if (element['title'] == "Food") {
-            isBusinessSelectedId = element['_id'];
-            isBusinessSelected = element['title'];
-            isOpenTap = true;
-            await fatchVendor("");
-            update();
-          }
-        }
-      }
-      update();
-    } catch (e) {
-      if (kDebugMode) {
-        print(e.toString());
-      }
-    }
-    update();
-  }
-
-  onBusinessSelected(String id, String name) async {
-    isBusinessSelectedId = id;
-    isBusinessSelected = name;
-    fatchVendor("");
-    if (isBusinessSelected != "") {
-      // onOpenOrder();
-      Get.back();
-    } else {
-      Get.snackbar(
-        "Error",
-        "Please try again ?",
-        backgroundColor: Colors.white,
-        colorText: Colors.black,
-      );
-    }
-    update();
-  }
-
-  fatchVendor(String search) async {
-    try {
-      var resData = await apis.call(
-        apiMethods.fetchVendorByBusinessCategoryId,
-        {
-          "businessCategoryId": isBusinessSelectedId,
-          "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
-        },
-        ApiType.post,
-      );
-      if (resData.isSuccess == true && resData.data != 0) {
-        getVendorsList = resData.data;
-      }
-      update();
-    } catch (e) {
-      return null;
-    }
-    update();
-  }
-
-  onVendorsSelected(String name, String id) async {
-    isVendorsSelected = name;
-    if (isBusinessSelected != "") {
-      isVendorsSelectedId = id;
-      Get.back();
-      // onOpenOrder();
-    } else {
-      Get.snackbar(
-        "Error",
-        "Please select business categories ?",
-        backgroundColor: Colors.white,
-        colorText: Colors.black,
-      );
-    }
+  onNewAdd() {
+    isNewAdd = false;
     update();
   }
 }

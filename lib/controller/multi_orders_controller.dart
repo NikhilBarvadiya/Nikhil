@@ -106,6 +106,7 @@ class MultiOrdersController extends GetxController {
         isAreaSelected = "";
         isRouteSelectedId = "";
         isb2cRouteSelectedId = "";
+        isVendorsSelectedId = "";
         isB2CVendorsSelectedId = "";
         selectedOrder = order[a]["order"];
       } else {

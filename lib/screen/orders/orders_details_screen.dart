@@ -142,6 +142,7 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
                                         data["locations"][index]["package"]["itemList"],
                                       );
                                     },
+                                    isRequestStatus: data["requestStatus"] == "Accepted" ? true : false,
                                     isEditable: ordersController.isdragDrop == false ? false : true,
                                     editClick: () {
                                       ordersController.openEditDialog(data);
