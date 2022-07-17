@@ -378,7 +378,7 @@ class OrdersController extends GetxController {
           ListTile(
             title: const Text("Send to driver"),
             onTap: () async {
-              String link = "https://wa.me/916357017016";
+              String link = "https://wa.me/${data["driver"]["driverPhone"]}";
               // ignore: deprecated_member_use
               await launch(link);
               Get.back();
@@ -615,7 +615,7 @@ class OrdersController extends GetxController {
   bool isOpenTap = false;
   bool isOpenOrder = false;
   bool isNewOrder = false;
-  bool isNewAdd = false;
+  bool isNewAdd = true;
   List selectedOrderTrueList = [];
   List businessCategories = [];
   List getVendorsList = [];
@@ -936,7 +936,7 @@ class OrdersController extends GetxController {
   onRouteSelected(String id, String name) async {
     isRouteSelectedId = id;
     isRouteSelected = name;
-    // fatchVendor("");
+    getVendorLastorder();
     if (isRouteSelectedId != "") {
       onOpenOrder();
       Get.back();

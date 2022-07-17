@@ -157,7 +157,7 @@ class _ByVendorWidgetsState extends State<ByVendorWidgets> {
                               onTap: () {
                                 codSettlementViewController.addToSelectedVendorList(codSettlementViewController.vendorList[i]);
                               },
-                              cardColors: codSettlementViewController.vendorList[i]["selected"] == true ? Colors.blue[50] : Colors.white,
+                              cardColors: codSettlementViewController.vendorList[i]["selected"] == true ? Colors.green[100] : Colors.white,
                               orderNo: codSettlementViewController.vendorList[i]["orderDetails"]["orderNo"],
                               name: codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"] != null ? codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"]["name"].toString().toCapitalized() : codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["address"].toString().toCapitalized(),
                               personName: "(${codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"] != null ? codSettlementViewController.vendorList[i]["orderDetails"]["vendorOrderStatusId"]["addressId"]["person"].toString().toCapitalized() : '-'})",

@@ -27,8 +27,8 @@ class NewOrdersScreen extends StatelessWidget {
           appBar: AppBar(
             elevation: 1,
             foregroundColor: Colors.white,
-            backgroundColor: ordersController.isNewAdd ? Theme.of(context).primaryColor : Colors.amber,
-            title: const Text("New Orders"),
+            backgroundColor: ordersController.isNewAdd ? Theme.of(context).primaryColor : Colors.orange,
+            title: Text(ordersController.isNewAdd ? "Pendding orders" : "Add orders"),
             leading: IconButton(
               onPressed: () => ordersController.isNewAdd ? ordersController.onOrderBack() : ordersController.onRepair(),
               icon: const Icon(Icons.arrow_back_outlined),
@@ -103,7 +103,7 @@ class NewOrdersScreen extends StatelessWidget {
                     const SizedBox(height: 5),
                   ],
                 ),
-              if (ordersController.isOpenOrder == false && ordersController.isOpenTap == true)
+              if (ordersController.isOpenOrder == false && ordersController.isOpenTap == false)
                 Column(
                   children: [
                     GestureDetector(

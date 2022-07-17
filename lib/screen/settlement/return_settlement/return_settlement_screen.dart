@@ -130,7 +130,7 @@ class _ReturnSettlementScreenState extends State<ReturnSettlementScreen> {
                                   returnSettlementController.addToSelectedList(returnSettlementController.returnSettlement[i]);
                                 }
                               },
-                              borderColor: returnSettlementController.returnSettlement[i]["selected"] == true ? Colors.blue[50] : Colors.white,
+                              borderColor: returnSettlementController.returnSettlement[i]["selected"] == true ? Colors.green[100] : Colors.white,
                               name: returnSettlementController.returnSettlement[i]["addressId"] != null ? returnSettlementController.returnSettlement[i]["addressId"]["name"].toString() : '',
                               personName: returnSettlementController.returnSettlement[i]["addressId"] != null ? returnSettlementController.returnSettlement[i]["addressId"]["person"].toString() : '',
                               place: returnSettlementController.returnSettlement[i]["addressId"] != null ? returnSettlementController.returnSettlement[i]["addressId"]["address"].toString() : '',

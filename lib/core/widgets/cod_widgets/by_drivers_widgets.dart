@@ -160,7 +160,7 @@ class _ByDriversWidgetsState extends State<ByDriversWidgets> {
                               onTap: () {
                                 codSettlementViewController.addToSelectedDriverList(codSettlementViewController.driversList[i]);
                               },
-                              cardColors: codSettlementViewController.driversList[i]["selected"] == true ? Colors.blue[50] : Colors.white,
+                              cardColors: codSettlementViewController.driversList[i]["selected"] == true ? Colors.green[100] : Colors.white,
                               orderNo: codSettlementViewController.driversList[i]["orderDetails"]["orderNo"],
                               addressDate: getFormattedDate(codSettlementViewController.driversList[i]["createdAt"].toString()),
                               codAmount: codSettlementViewController.driversList[i]["orderDetails"]["collectableCash"] != null ? "₹" + codSettlementViewController.driversList[i]["orderDetails"]["collectableCash"].toString() : "₹0",
