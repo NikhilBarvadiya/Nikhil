@@ -394,7 +394,8 @@ class OrdersController extends GetxController {
           ),
           ListTile(
             title: const Text("Delete"),
-            onTap: () {
+            onTap: () async {
+              // await shiftVendorOrderLocationsToPending();
               Get.back();
               update();
             },
@@ -493,10 +494,11 @@ class OrdersController extends GetxController {
       isLoading = true;
       update();
       var request = {
-        "selectedOrder": {
-          "_id": orderDetails["_id"],
-          "locations": orderDetails["locations"],
-        },
+        // "selectedOrder": {
+        //   "_id": orderDetails["_id"],
+        //   "locations": orderDetails["locations"],
+        // },
+        "selectedOrder": orderDetails
       };
       APIDataClass response = await apis.call(
         apiMethods.orderDataUpdate,
@@ -551,20 +553,81 @@ class OrdersController extends GetxController {
     }
   }
 
+  shiftVendorOrderLocationsToPending() async {
+    try {
+      isLoading = true;
+      update();
+      var request = {
+        "vendorOrderStatusIds": {},
+      };
+      APIDataClass response = await apis.call(
+        apiMethods.shiftVendorOrderLocationsToPending,
+        request,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+    isLoading = false;
+    update();
+  }
+
   /// New Orders Controller ///
   String selectedOrder = "B2B Order";
   bool isSlider = false;
   bool isOpenTap = false;
   bool isOpenOrder = false;
-  bool isNewAdd = true;
+  bool isNewOrder = false;
+  bool isNewAdd = false;
   List selectedOrderTrueList = [];
   List businessCategories = [];
   List getVendorsList = [];
+  List vendorOrderMergeByBusinessCategoryIdList = [];
   List getVendorLastorderList = [];
+  List getRoutesDetailsList = [];
   String isBusinessSelectedId = "";
   String isBusinessSelected = "";
   String isVendorsSelected = "";
   String isVendorsSelectedId = "";
+  String isRouteSelectedId = "";
+  String isRouteSelected = "";
 
   onOpenTap() {
     onClear();
@@ -615,17 +678,35 @@ class OrdersController extends GetxController {
     isBusinessSelectedId = "";
     isVendorsSelected = "";
     isVendorsSelectedId = "";
+    isRouteSelected = "";
+    isRouteSelectedId = "";
+    selectedOrderTrueList.clear();
     update();
   }
 
   onOrderBack() {
-    if (isBusinessSelected != "" && isBusinessSelectedId != "" && isVendorsSelected != "" && isVendorsSelectedId != "") {
-      onClear();
-      isNewAdd = true;
-      isOpenOrder = false;
+    if (isRouteSelected != "") {
+      onNewAdd();
+    } else {
+      if (isBusinessSelected != "" && isBusinessSelectedId != "" && isVendorsSelected != "" && isVendorsSelectedId != "") {
+        onClear();
+        selectedOrderTrueList.clear();
+        isNewAdd = true;
+        isOpenOrder = false;
+      } else {
+        isNewAdd = true;
+        selectedOrderTrueList.clear();
+        Get.back();
+      }
+    }
+    update();
+  }
+
+  onRepair() {
+    if (isBusinessSelected != "" && isBusinessSelectedId != "" && isVendorsSelected != "" && isVendorsSelectedId != "" && isRouteSelected != "") {
+      onNewAdd();
     } else {
       isNewAdd = true;
-      Get.back();
     }
     update();
   }
@@ -640,72 +721,6 @@ class OrdersController extends GetxController {
       "isActive": false,
     },
   ];
-
-  // List selectedAddress = [
-  //   for (int i = 1; i < 11; i++)
-  //     {
-  //       "shopName": "WELL NATURES HEALTH CARE $i",
-  //       "personName": "R27-1000$i",
-  //       "number": "9898849850",
-  //       "address": "R-27 KIMAVATI COMPLEX,SHOP NO.71,AT.KIM(EAST),TA.OLPAD,SURAT.",
-  //       "Vendor": "SHREE HARI PHARMA",
-  //       "selected": false,
-  //     }
-  // ];
-
-  // shiftVendorOrderLocationsToPending() async {
-  //   try {
-  //     isLoading = true;
-  //     update();
-  //     var request = {
-  //       "vendorOrderStatusIds": {},
-  //     };
-  //     APIDataClass response = await apis.call(
-  //       apiMethods.shiftVendorOrderLocationsToPending,
-  //       request,
-  //       ApiType.post,
-  //     );
-  //     if (response.isSuccess && response.data != 0) {
-  //       Get.rawSnackbar(
-  //         title: null,
-  //         messageText: Text(
-  //           response.message!,
-  //           style: const TextStyle(color: Colors.white),
-  //         ),
-  //         backgroundColor: Colors.green,
-  //         snackPosition: SnackPosition.TOP,
-  //         borderRadius: 0,
-  //         margin: const EdgeInsets.all(0),
-  //       );
-  //     } else {
-  //       Get.rawSnackbar(
-  //         title: null,
-  //         messageText: Text(
-  //           response.message!,
-  //           style: const TextStyle(color: Colors.black),
-  //         ),
-  //         backgroundColor: Colors.amber,
-  //         snackPosition: SnackPosition.TOP,
-  //         borderRadius: 0,
-  //         margin: const EdgeInsets.all(0),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     Get.rawSnackbar(
-  //       title: null,
-  //       messageText: Text(
-  //         e.toString(),
-  //         style: const TextStyle(color: Colors.white),
-  //       ),
-  //       backgroundColor: Colors.redAccent,
-  //       snackPosition: SnackPosition.TOP,
-  //       borderRadius: 0,
-  //       margin: const EdgeInsets.all(0),
-  //     );
-  //     isLoading = false;
-  //     update();
-  //   }
-  // }
 
   fatchbusinessCategories() async {
     try {
@@ -778,10 +793,217 @@ class OrdersController extends GetxController {
     update();
   }
 
+  onNewAdd() {
+    onClear();
+    selectedOrderTrueList.clear();
+    isOpenOrder = false;
+    isNewAdd = false;
+    update();
+  }
+
   /// Peanding Apicalling......///
-  vendorOrderMergeByBusinessCategoryId() async {}
+
+  vendorOrderMergeByBusinessCategoryId() async {
+    try {
+      isLoading = true;
+      update();
+      var request = {
+        "businessCategoryId": isBusinessSelectedId,
+        "vendorId": isVendorsSelected,
+        "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
+      };
+      APIDataClass response = await apis.call(
+        apiMethods.vendorOrderMergeByBusinessCategoryId,
+        request,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        vendorOrderMergeByBusinessCategoryIdList = response.data;
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+    isLoading = false;
+    update();
+  }
+
+  onOpenOrder() async {
+    if (isBusinessSelected != "" && isVendorsSelected != "") {
+      if (isNewAdd == false) {
+        isNewOrder = true;
+        await getRoutesDetails();
+      } else {
+        isOpenOrder = true;
+        await vendorOrderMergeByBusinessCategoryId();
+      }
+      _autoSelector();
+    } else {
+      isOpenOrder = false;
+    }
+  }
+
+  addToSelectedList(item) {
+    if (item != null) {
+      var index = selectedOrderTrueList.indexOf(item);
+      if (index == -1) {
+        selectedOrderTrueList.add(item);
+        update();
+      }
+      _autoSelector();
+    }
+  }
+
+  removeToSelectedList(item) {
+    if (item != null) {
+      Get.dialog(
+        AlertDialog(
+          title: Text(
+            'Remove',
+            style: AppCss.h1,
+          ),
+          content: Text(
+            'Do you remove this location?',
+            style: AppCss.h3,
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Ok"),
+              onPressed: () {
+                selectedOrderTrueList.remove(item);
+                _autoSelector();
+                Get.back();
+              },
+            ),
+            TextButton(
+              child: const Text("Close"),
+              onPressed: () => Get.back(),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  _autoSelector() {
+    for (int i = 0; i < vendorOrderMergeByBusinessCategoryIdList.length; i++) {
+      var data = selectedOrderTrueList.where((element) => element['_id'] == vendorOrderMergeByBusinessCategoryIdList[i]['_id']);
+      if (data.isNotEmpty) {
+        vendorOrderMergeByBusinessCategoryIdList[i]['selected'] = true;
+      } else {
+        vendorOrderMergeByBusinessCategoryIdList[i]['selected'] = false;
+      }
+      update();
+    }
+  }
 
   ///Add New ApiCalling.......///
+
+  onRouteSelected(String id, String name) async {
+    isRouteSelectedId = id;
+    isRouteSelected = name;
+    // fatchVendor("");
+    if (isRouteSelectedId != "") {
+      onOpenOrder();
+      Get.back();
+    } else {
+      Get.snackbar(
+        "Error",
+        "Please try again ?",
+        backgroundColor: Colors.white,
+        colorText: Colors.black,
+      );
+    }
+    update();
+  }
+
+  getRoutesDetails() async {
+    try {
+      isLoading = true;
+      update();
+      APIDataClass response = await apis.call(
+        apiMethods.getRoutesDetails,
+        {},
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        getRoutesDetailsList = response.data;
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+    isLoading = false;
+    update();
+  }
 
   getVendorLastorder() async {
     try {
@@ -838,75 +1060,6 @@ class OrdersController extends GetxController {
       update();
     }
     isLoading = false;
-    update();
-  }
-
-  onOpenOrder() async {
-    if (isBusinessSelected != "" && isVendorsSelected != "") {
-      isOpenOrder = true;
-      await getVendorLastorder();
-      _autoSelector();
-    } else {
-      isOpenOrder = false;
-    }
-  }
-
-  addToSelectedList(item) {
-    if (item != null) {
-      var index = selectedOrderTrueList.indexOf(item);
-      if (index == -1) {
-        selectedOrderTrueList.add(item);
-        update();
-      }
-      _autoSelector();
-    }
-  }
-
-  removeToSelectedList(item) {
-    if (item != null) {
-      Get.dialog(
-        AlertDialog(
-          title: Text(
-            'Remove',
-            style: AppCss.h1,
-          ),
-          content: Text(
-            'Do you remove this location?',
-            style: AppCss.h3,
-          ),
-          actions: [
-            TextButton(
-              child: const Text("Ok"),
-              onPressed: () {
-                selectedOrderTrueList.remove(item);
-                _autoSelector();
-                Get.back();
-              },
-            ),
-            TextButton(
-              child: const Text("Close"),
-              onPressed: () => Get.back(),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
-  _autoSelector() {
-    for (int i = 0; i < getVendorLastorderList.length; i++) {
-      var data = selectedOrderTrueList.where((element) => element['_id'] == getVendorLastorderList[i]['_id']);
-      if (data.isNotEmpty) {
-        getVendorLastorderList[i]['selected'] = true;
-      } else {
-        getVendorLastorderList[i]['selected'] = false;
-      }
-      update();
-    }
-  }
-
-  onNewAdd() {
-    isNewAdd = false;
     update();
   }
 }

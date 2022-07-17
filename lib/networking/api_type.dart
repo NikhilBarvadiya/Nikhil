@@ -39,17 +39,17 @@ class ApiMethods {
   final String sendOTPVendorCashSettlement = "manager/vCodSettlement/vendor/sendOTP";
   final String verifyOTPVendorCashSettlement = "manager/vCodSettlement/vendor/verify";
   final String updateVendorPackageDetails = "manager/updateVendorPackageDetails";
-  final String shiftVendorOrderLocationsToPending = "manager/shiftVendorOrderLocationsToPending";
 
   // Order Apis.......//
-  final String orderDataUpdate = "manager/orderDataUpdate";
-  final String vendorOrderMergeByBusinessCategoryId = "manager/vendorOrderMergeByBusinessCategoryId"; // pending vendor seletion "vendorId","orderType","BisnessId....."
+  final String orderDataUpdate = "manager/orderDataUpdate"; //ok
+  final String shiftVendorOrderLocationsToPending = "manager/shiftVendorOrderLocationsToPending";
+  final String vendorOrderMergeByBusinessCategoryId = "manager/vendorOrderMergeByBusinessCategoryId"; // pending vendor seletion "vendorId","orderType","BisnessId....."ok
 
   //selection data vendor add ....   json add order add.....
   //vendor selection
-  final String vendorPendingData = "manager/addNewLocationDetailsInVendorStatus"; // "vendorId","orderType","BisnessId....."  new add use.....
+  final String getRoutesDetails = "manager/getRoutesDetails"; //new add use..... ok
+  final String addNewLocationDetailsInVendorStatus = "manager/addNewLocationDetailsInVendorStatus"; // "vendorId","orderType","BisnessId....."  new add use.....
   final String getVendorLastorder = "manager/getVendorLastOrderDetails"; // "vendorId","orderType",""  new add use.....
-  final String getRoutesDetails = "manager/getRoutesDetails"; //new add use.....
 
   // COD Settlement Apis.......//
   final String vCodSettlementgetDetails = "manager/vCodSettlement/getDetails";

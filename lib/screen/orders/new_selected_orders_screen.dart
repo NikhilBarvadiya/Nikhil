@@ -36,7 +36,7 @@ class NewSelectedOrdersScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.only(top: 10),
                   children: [
-                    ...ordersController.selectedOrderTrueList.map(
+                    ...ordersController.selectedOrderTrueList.toSet().toList().map(
                       (e) {
                         int index = ordersController.selectedOrderTrueList.indexOf(e);
                         return Row(
@@ -55,10 +55,10 @@ class NewSelectedOrdersScreen extends StatelessWidget {
                             ),
                             Expanded(
                               child: NewOrderCard(
-                                addressHeder: e["shopName"],
-                                personName: e["personName"] + "\t\t\t(${e["number"]})",
-                                vendorName: e["Vendor"],
-                                address: e["address"],
+                                addressHeder: e["addressId"]["name"],
+                                personName: e["addressId"]["person"] + "\t\t\t(${e["addressId"]["mobile"]})",
+                                vendorName: e["vendorOrderId"]["vendorId"]["name"],
+                                address: e["addressId"]["address"],
                                 onTap: () {
                                   ordersController.removeToSelectedList(e);
                                 },
