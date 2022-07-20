@@ -14,7 +14,7 @@ class ApiMethods {
   final String businessCategories = "manager/businessCategories";
 
   ///one
-  final String getVendors = "manager/getVendors";
+  final String getVendors = "manager/getVendors"; //add
   final String area = "manager/area";
   final String route = "manager/route";
   final String vendorOrders = "manager/vendorOrders"; // not use
@@ -24,7 +24,7 @@ class ApiMethods {
   final String vendorGetDetails = "manager/vCodSettlement/vendors/getDetails";
   final String vendorDetails = "manager/vCodSettlement/vendors/vendorDetails";
   final String b2bRoute = "manager/getAreaByVendorId";
-  final String fetchVendorByBusinessCategoryId = "manager/fetchVendorByBusinessCategoryId";
+  final String fetchVendorByBusinessCategoryId = "manager/fetchVendorByBusinessCategoryId"; /////
   final String getVendorB2COrders = "manager/vendorB2COrders";
   final String getGlobalAddressBySearch = "manager/getGlobalAddressBySearch";
   final String vehiclesNames = "manager/vehiclesNames";
@@ -42,12 +42,14 @@ class ApiMethods {
 
   // Order Apis.......//
   final String orderDataUpdate = "manager/orderDataUpdate"; //ok
-  final String shiftVendorOrderLocationsToPending = "manager/shiftVendorOrderLocationsToPending";
   final String vendorOrderMergeByBusinessCategoryId = "manager/vendorOrderMergeByBusinessCategoryId"; // pending vendor seletion "vendorId","orderType","BisnessId....."ok
+  final String getRoutesDetails = "manager/getRoutesDetails"; //new add use..... ok
+  final String getAllGlobalAddressByRoute = "manager/getAllGlobalAddressByRoute"; // new add orderdetails........ok
 
   //selection data vendor add ....   json add order add.....
   //vendor selection
-  final String getRoutesDetails = "manager/getRoutesDetails"; //new add use..... ok
+  final String shiftVendorOrderLocationsToPending = "manager/shiftVendorOrderLocationsToPending";
+
   final String addNewLocationDetailsInVendorStatus = "manager/addNewLocationDetailsInVendorStatus"; // "vendorId","orderType","BisnessId....."  new add use.....
   final String getVendorLastorder = "manager/getVendorLastOrderDetails"; // "vendorId","orderType",""  new add use.....
 

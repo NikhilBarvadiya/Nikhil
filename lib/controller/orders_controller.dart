@@ -617,17 +617,49 @@ class OrdersController extends GetxController {
   bool isNewOrder = false;
   bool isNewAdd = true;
   List selectedOrderTrueList = [];
+  List selectedNewAddOrderTrueList = [];
   List businessCategories = [];
   List getVendorsList = [];
+  List fetchVendorByBusinessCategoryList = [];
   List vendorOrderMergeByBusinessCategoryIdList = [];
-  List getVendorLastorderList = [];
+  List getAllGlobalAddressByRouteList = [];
   List getRoutesDetailsList = [];
+  List getVendorLastorderList = [];
+  List addNewLocationDetailsInVendorStatusList = [];
   String isBusinessSelectedId = "";
   String isBusinessSelected = "";
   String isVendorsSelected = "";
   String isVendorsSelectedId = "";
   String isRouteSelectedId = "";
   String isRouteSelected = "";
+
+  onClearAll() {
+    Get.defaultDialog(
+      radius: 4,
+      barrierDismissible: false,
+      title: "",
+      content: const Text(
+        "Do you really want to clear all the location?",
+        textAlign: TextAlign.center,
+      ),
+      cancel: TextButton(
+        onPressed: () {
+          selectedOrderTrueList.clear();
+          selectedNewAddOrderTrueList.clear();
+          _autoSelector();
+          _autoNewAddSelector();
+          Get.back();
+        },
+        child: const Text("Yes"),
+      ),
+      confirm: TextButton(
+        onPressed: () {
+          Get.back();
+        },
+        child: const Text("No"),
+      ),
+    );
+  }
 
   onOpenTap() {
     onClear();
@@ -681,6 +713,7 @@ class OrdersController extends GetxController {
     isRouteSelected = "";
     isRouteSelectedId = "";
     selectedOrderTrueList.clear();
+    selectedNewAddOrderTrueList.clear();
     update();
   }
 
@@ -691,11 +724,13 @@ class OrdersController extends GetxController {
       if (isBusinessSelected != "" && isBusinessSelectedId != "" && isVendorsSelected != "" && isVendorsSelectedId != "") {
         onClear();
         selectedOrderTrueList.clear();
+        selectedNewAddOrderTrueList.clear();
         isNewAdd = true;
         isOpenOrder = false;
       } else {
         isNewAdd = true;
         selectedOrderTrueList.clear();
+        selectedNewAddOrderTrueList.clear();
         Get.back();
       }
     }
@@ -741,7 +776,7 @@ class OrdersController extends GetxController {
   onBusinessSelected(String id, String name) async {
     isBusinessSelectedId = id;
     isBusinessSelected = name;
-    fatchVendor("");
+    isNewAdd ? await fetchVendorByBusinessCategoryId("") : await getVendors("");
     if (isBusinessSelected != "") {
       onOpenOrder();
       Get.back();
@@ -756,10 +791,30 @@ class OrdersController extends GetxController {
     update();
   }
 
-  fatchVendor(String search) async {
+  fetchVendorByBusinessCategoryId(String search) async {
     try {
       var resData = await apis.call(
         apiMethods.fetchVendorByBusinessCategoryId,
+        {
+          "businessCategoryId": isBusinessSelectedId,
+          "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
+        },
+        ApiType.post,
+      );
+      if (resData.isSuccess == true && resData.data != 0) {
+        fetchVendorByBusinessCategoryList = resData.data;
+      }
+      update();
+    } catch (e) {
+      return null;
+    }
+    update();
+  }
+
+  getVendors(String search) async {
+    try {
+      var resData = await apis.call(
+        apiMethods.getVendors,
         {
           "businessCategoryId": isBusinessSelectedId,
           "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
@@ -796,6 +851,7 @@ class OrdersController extends GetxController {
   onNewAdd() {
     onClear();
     selectedOrderTrueList.clear();
+    selectedNewAddOrderTrueList.clear();
     isOpenOrder = false;
     isNewAdd = false;
     update();
@@ -867,6 +923,10 @@ class OrdersController extends GetxController {
       if (isNewAdd == false) {
         isNewOrder = true;
         await getRoutesDetails();
+        if (isRouteSelected != "") {
+          isOpenOrder = true;
+          await getAllGlobalAddressByRoute();
+        }
       } else {
         isOpenOrder = true;
         await vendorOrderMergeByBusinessCategoryId();
@@ -936,7 +996,7 @@ class OrdersController extends GetxController {
   onRouteSelected(String id, String name) async {
     isRouteSelectedId = id;
     isRouteSelected = name;
-    getVendorLastorder();
+    getAllGlobalAddressByRoute();
     if (isRouteSelectedId != "") {
       onOpenOrder();
       Get.back();
@@ -1005,6 +1065,136 @@ class OrdersController extends GetxController {
     update();
   }
 
+  getAllGlobalAddressByRoute() async {
+    try {
+      isLoading = true;
+      update();
+      var request = {
+        "routeId": isRouteSelectedId,
+      };
+      APIDataClass response = await apis.call(
+        apiMethods.getAllGlobalAddressByRoute,
+        request,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        getAllGlobalAddressByRouteList = response.data;
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+    isLoading = false;
+    update();
+  }
+
+  newAddToSelectedList(item) {
+    if (item != null) {
+      var index = selectedNewAddOrderTrueList.indexOf(item);
+      if (index == -1) {
+        selectedNewAddOrderTrueList.add(item);
+        update();
+      }
+      _autoNewAddSelector();
+    }
+  }
+
+  newRemoveToSelectedList(item) {
+    if (item != null) {
+      Get.dialog(
+        AlertDialog(
+          title: Text(
+            'Remove',
+            style: AppCss.h1,
+          ),
+          content: Text(
+            'Do you remove this location?',
+            style: AppCss.h3,
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Ok"),
+              onPressed: () {
+                selectedNewAddOrderTrueList.remove(item);
+                _autoNewAddSelector();
+                Get.back();
+              },
+            ),
+            TextButton(
+              child: const Text("Close"),
+              onPressed: () => Get.back(),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  _autoNewAddSelector() {
+    for (int i = 0; i < getAllGlobalAddressByRouteList.length; i++) {
+      var data = selectedNewAddOrderTrueList.where((element) => element['_id'] == getAllGlobalAddressByRouteList[i]['_id']);
+      if (data.isNotEmpty) {
+        getAllGlobalAddressByRouteList[i]['selected'] = true;
+      } else {
+        getAllGlobalAddressByRouteList[i]['selected'] = false;
+      }
+      update();
+    }
+  }
+
+  onNewAddSelectedOrders() {
+    if (getAllGlobalAddressByRouteList.isNotEmpty) {
+      Get.toNamed(AppRoutes.newSelectedOrdersScreen);
+    } else {
+      Get.rawSnackbar(
+        title: null,
+        messageText: const Text(
+          "order address not selected!",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.deepOrange,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+    }
+    update();
+  }
+
   getVendorLastorder() async {
     try {
       isLoading = true;
@@ -1061,5 +1251,234 @@ class OrdersController extends GetxController {
     }
     isLoading = false;
     update();
+  }
+
+  addNewLocationDetailsInVendorStatus() async {
+    try {
+      isLoading = true;
+      update();
+      getVendorLastorder();
+      List orderData = [];
+      getVendorLastorderList.forEach((order) {
+        selectedNewAddOrderTrueList.forEach((element) {
+          dynamic data = {
+            "nOfPackages": element["nOfPackages"],
+            "status": "running",
+            "addressId": element["_id"],
+            "routeId": element["routeId"]["_id"],
+            "areaId": element["areaId"],
+            "cash": num.parse(element["cash"].toString()),
+            "cashReceived": 0,
+            "vendorId": order[isVendorsSelected],
+            "businessCategoryId": isBusinessSelectedId,
+            "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
+          };
+          orderData.add(data);
+        });
+      });
+      APIDataClass response = await apis.call(
+        apiMethods.addNewLocationDetailsInVendorStatus,
+        orderData,
+        ApiType.post,
+      );
+      if (response.isSuccess && response.data != 0) {
+        addNewLocationDetailsInVendorStatusList = response.data;
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      } else {
+        Get.rawSnackbar(
+          title: null,
+          messageText: Text(
+            response.message!,
+            style: const TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.amber,
+          snackPosition: SnackPosition.TOP,
+          borderRadius: 0,
+          margin: const EdgeInsets.all(0),
+        );
+      }
+    } catch (e) {
+      Get.rawSnackbar(
+        title: null,
+        messageText: Text(
+          e.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+      isLoading = false;
+      update();
+    }
+    isLoading = false;
+    update();
+  }
+
+  dynamic finalOrderLocations = [];
+  onPendingProcced() {
+    dynamic itemList = [];
+    print("Strating......");
+    addNewLocationDetailsInVendorStatusList.forEach(
+      (element) {
+        itemList = [];
+        if (element["isAdded"] != true) {
+          dynamic itemObject = {
+            "name": "${element["vendorOrderId"]?["vendorId"]?["name"]}_${element["nOfPackages"]}",
+            "quantity": element["nOfPackages"],
+            "weight": 100,
+            "weightType": 'GM',
+            "vendorData": {
+              "vendorId": element["vendorOrderId"]?["vendorId"]?["_id"],
+              "vendorOrderId": element["vendorOrderId"]?["_id"],
+              "itemId": element["_id"],
+              "addressId": element["addressId"]?["_id"],
+              "routeId": element["routeId"],
+              "cash": 0,
+              "cashReceive": 0,
+            }
+          };
+          itemList.add(itemObject);
+          addNewLocationDetailsInVendorStatusList.forEach(
+            (ele) {
+              if (ele["addressId"] != null) {
+                if (ele["addressId"]["_id"] == ele["addressId"]["_id"] && ele["_id"] != ele["_id"]) {
+                  dynamic boxes = ele["nOfBoxes"] != "" ? ele["nOfBoxes"] : 0;
+                  dynamic itemObject2 = {
+                    "name": "${element["vendorOrderId"]?["vendorId"]?["name"]}_${element["nOfPackages"] + boxes}",
+                    "mobile": element["vendorOrderId"]?["vendorId"]?["mobile"],
+                    "quantity": element["nOfPackages"] + boxes,
+                    "loose": element["nOfPackages"],
+                    "boxes": boxes,
+                    "weight": 100,
+                    "weightType": 'GM',
+                    "vendorData": {
+                      "vendorId": element["vendorOrderId"]?["vendorId"]?["_id"],
+                      "vendorOrderId": element["vendorOrderId"]?["_id"],
+                      "itemId": element["_id"],
+                      "addressId": element["addressId"]?["_id"],
+                      "routeId": element["routeId"],
+                      "cash": element["cash"],
+                      "cashReceive": 0,
+                    }
+                  };
+                  ele["isAdded"] = true;
+                  itemList.add(itemObject2);
+                  itemList = itemList.filter((v, i, a) => a.findIndex((v2) => v2["vendorData"]["itemId"] == v["vendorData"]["itemId"]) == i);
+                }
+              } else {
+                if (ele["name"] == element["name"] && num.parse(ele["latLong"].split(',')[0].trim()) == num.parse(element["latLong"].split(',')[0].trim()) && num.parse(ele["latLong"].split(',')[1].trim()) == num.parse(element["latLong"].split(',')[1].trim())) {
+                  dynamic boxes = ele["nOfBoxes"] != "" ? ele["nOfBoxes"] : 0;
+                  dynamic itemObject2 = {
+                    "name": "${ele.vendorOrderId?.vendorId?.name}_${ele.nOfPackages + boxes}",
+                    "mobile": ele["vendorOrderId"]?["vendorId"]?["mobile"],
+                    "quantity": ele["nOfPackages"] + boxes,
+                    "loose": ele["nOfPackages"],
+                    "boxes": boxes,
+                    "weight": 100,
+                    "weightType": 'GM',
+                    "vendorData": {
+                      "vendorId": ele["vendorOrderId"]?["vendorId"]?["_id"],
+                      "vendorOrderId": ele["vendorOrderId"]?["_id"],
+                      "itemId": ele["_id"],
+                      "addressId": ele["addressId"]?["_id"],
+                      "routeId": ele["routeId"],
+                      "cash": ele["cash"],
+                      "cashReceive": 0,
+                    }
+                  };
+                  ele["isAdded"] = true;
+                  itemList.push(itemObject2);
+                  itemList = itemList.filter((v, i, a) => a.findIndex((v2) => v2["vendorData"]["itemId"] == v["vendorData"]["itemId"]) == i);
+                }
+              }
+            },
+          );
+          dynamic location = {
+            "package": {
+              "contentList": [],
+              "images": [],
+              "laborCharges": 0,
+              "laborQty": 0,
+              "laborType": 'hr',
+              "isFragile": false,
+              "fragileCharges": 0,
+              "isInsurance": false,
+              "totalPackageCharges": 0,
+              "insuranceCharges": 0,
+              "payAtPickup": null,
+              "invoice": "",
+              "signature": null,
+              "invoiceSign": null,
+              "itemTotalWeight": itemList.map(element == element["weight"]).reduce((prev, curr) => prev + curr, 0),
+              "total": 0,
+              "anyNote": element["anyNote"] != "" ? element["anyNote"] : "Location by admin",
+              "itemList": itemList,
+            },
+            "type": selectedNewAddOrderTrueList.indexOf(element) == selectedNewAddOrderTrueList.length - 1 ? 'Drop' : 'Stop',
+            "instructionAudio": "",
+            "otp": "1234",
+            "isReached": false,
+            "reachedTime": null,
+            "packageType": null,
+            "location": element["addressId"] != null
+                ? {
+                    "name": element["addressId"]["name"],
+                    "address": element["addressId"]["address"],
+                    "lat": element["addressId"]["lat"],
+                    "lng": element["addressId"]["lng"],
+                    "flatFloorBuilding": element["addressId"]["flatFloorBuilding"],
+                    "person": element["addressId"]["person"],
+                    "mobile": element["addressId"]["mobile"],
+                  }
+                : {
+                    "name": element["name"],
+                    "address": element["address"],
+                    "flatFloorBuilding": '',
+                    "person": '',
+                    "lat": num.parse(element["latLong"].split(',')[0].trim()),
+                    "lng": num.parse(element["latLong"].split(',')[1].trim()),
+                    "mobile": element["mobile"],
+                  },
+            "dropPackage": [],
+          };
+          finalOrderLocations.add(location);
+        }
+      },
+    );
+    dynamic forEachData = {
+      "ele": dynamic,
+      "i": dynamic,
+    };
+    selectedNewAddOrderTrueList.forEach((forEachData) {
+      if (forEachData["i"] == 0) {
+        itemList.forEach((item) {
+          forEachData["ele"]["package"]["itemList"].splice(forEachData["ele"]["package"]["itemList"].length, 0, item);
+        });
+        if (forEachData["i"] == selectedNewAddOrderTrueList.indexOf(0) && forEachData["ele"]["type"] == 'Drop') {
+          forEachData["ele"]["type"] = 'Stop';
+        }
+      }
+    });
+    finalOrderLocations.forEach(
+      (ele, index) => {
+        selectedNewAddOrderTrueList.insert(
+          selectedNewAddOrderTrueList.indexOf(index) + 1,
+          // 0,
+          finalOrderLocations[finalOrderLocations.length - 1 - index],
+        ),
+      },
+    );
   }
 }

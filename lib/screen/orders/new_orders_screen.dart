@@ -34,15 +34,16 @@ class NewOrdersScreen extends StatelessWidget {
               icon: const Icon(Icons.arrow_back_outlined),
             ),
             actions: [
-              MaterialButton(
-                onPressed: () => ordersController.onNewAdd(),
-                child: const Text(
-                  "NEW ADD",
-                  style: TextStyle(
-                    color: Colors.white,
+              if (ordersController.selectedOrderTrueList.isEmpty && ordersController.selectedNewAddOrderTrueList.isEmpty)
+                MaterialButton(
+                  onPressed: () => ordersController.onNewAdd(),
+                  child: const Text(
+                    "NEW ADD",
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           body: Column(
@@ -170,9 +171,9 @@ class NewOrdersScreen extends StatelessWidget {
                             isLive: false,
                             isOnSearch: true,
                             fetchApi: (search) async {
-                              return ordersController.fatchVendor(search);
+                              return ordersController.isNewAdd ? ordersController.fetchVendorByBusinessCategoryId(search) : ordersController.getVendors(search);
                             },
-                            itemList: ordersController.getVendorsList,
+                            itemList: ordersController.isNewAdd ? ordersController.fetchVendorByBusinessCategoryList : ordersController.getVendorsList,
                             bindText: 'name',
                             bindValue: '_id',
                             labelText: 'Select vendor',
@@ -278,76 +279,75 @@ class NewOrdersScreen extends StatelessWidget {
                       ).paddingOnly(top: 15),
                   ],
                 ),
-              // if (ordersController.isBusinessSelected != '' && ordersController.isVendorsSelectedId != '' && ordersController.isRouteSelected != "")
-              //   Row(
-              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       const Text(
-              //         "New orders address",
-              //         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
-              //       ),
-              //       IconButton(
-              //         onPressed: () => ordersController.onCloseTap(),
-              //         icon: Icon(
-              //           ordersController.isNewOrder ? Icons.arrow_drop_down : Icons.arrow_drop_up_sharp,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // if (ordersController.isBusinessSelected != '' && ordersController.isVendorsSelectedId != '' && ordersController.isRouteSelected != "" && ordersController.isOpenOrder != false && ordersController.isNewAdd == false)
-              //   Expanded(
-              //     child: ListView(
-              //       padding: const EdgeInsets.only(top: 10),
-              //       children: [
-              //         ...ordersController.vendorOrderMergeByBusinessCategoryIdList.toSet().toList().map(
-              //           (e) {
-              //             int index = ordersController.vendorOrderMergeByBusinessCategoryIdList.indexOf(e);
-              //             return Row(
-              //               crossAxisAlignment: CrossAxisAlignment.start,
-              //               children: [
-              //                 Container(
-              //                   height: 20,
-              //                   alignment: Alignment.center,
-              //                   margin: const EdgeInsets.only(top: 5),
-              //                   child: Text(
-              //                     "${index + 1}",
-              //                     style: AppCss.h3.copyWith(
-              //                       color: Colors.black,
-              //                     ),
-              //                   ),
-              //                 ),
-              //                 Expanded(
-              //                   child: OrderAddressCard(
-              //                     addressHeder: e["addressId"]["name"],
-              //                     personName: e["addressId"]["person"] + "\t\t\t(${e["addressId"]["mobile"]})",
-              //                     vendor: "vendor : ",
-              //                     vendorName: e["vendorOrderId"]["vendorId"]["name"],
-              //                     onTap: () {
-              //                       ordersController.addToSelectedList(e);
-              //                     },
-              //                     deleteIcon: e['selected'] == null
-              //                         ? Icons.add
-              //                         : e['selected'] == true
-              //                             ? Icons.check
-              //                             : Icons.add,
-              //                     icon: e['selected'] == null
-              //                         ? false
-              //                         : e['selected'] == true
-              //                             ? true
-              //                             : false,
-              //                     deleteIconColor: Colors.black,
-              //                     deleteIconBoxColor: AppController().appTheme.green,
-              //                     cardColors: e['selected'] == true ? Colors.green[100] : Colors.white,
-              //                   ),
-              //                 ),
-              //               ],
-              //             );
-              //           },
-              //         ).toList(),
-              //       ],
-              //     ),
-              //   ),
-
+              if (ordersController.isBusinessSelected != '' && ordersController.isVendorsSelectedId != '' && ordersController.isRouteSelected != "")
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "New orders address",
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+                    ),
+                    IconButton(
+                      onPressed: () => ordersController.onCloseTap(),
+                      icon: Icon(
+                        ordersController.isNewOrder ? Icons.arrow_drop_down : Icons.arrow_drop_up_sharp,
+                      ),
+                    ),
+                  ],
+                ),
+              if (ordersController.isBusinessSelected != '' && ordersController.isVendorsSelectedId != '' && ordersController.isRouteSelected != "" && ordersController.isOpenOrder != false && ordersController.isNewAdd == false)
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(top: 10),
+                    children: [
+                      ...ordersController.getAllGlobalAddressByRouteList.toSet().toList().map(
+                        (e) {
+                          int index = ordersController.getAllGlobalAddressByRouteList.indexOf(e);
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 20,
+                                alignment: Alignment.center,
+                                margin: const EdgeInsets.only(top: 5),
+                                child: Text(
+                                  "${index + 1}",
+                                  style: AppCss.h3.copyWith(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: OrderAddressCard(
+                                  addressHeder: ordersController.isNewAdd ? e["addressId"]["name"].toString() : e["name"].toString(),
+                                  personName: ordersController.isNewAdd ? e["addressId"]["person"].toString() + "\t\t\t(${e["addressId"]["mobile"]})" : e["person"] + "\t\t\t(${e["mobile"]})",
+                                  vendor: "Address : ",
+                                  vendorName: ordersController.isNewAdd ? e["vendorId"]["name"] : e["address"],
+                                  onTap: () {
+                                    ordersController.newAddToSelectedList(e);
+                                  },
+                                  deleteIcon: e['selected'] == null
+                                      ? Icons.add
+                                      : e['selected'] == true
+                                          ? Icons.check
+                                          : Icons.add,
+                                  icon: e['selected'] == null
+                                      ? false
+                                      : e['selected'] == true
+                                          ? true
+                                          : false,
+                                  deleteIconColor: Colors.black,
+                                  deleteIconBoxColor: AppController().appTheme.green,
+                                  cardColors: e['selected'] == true ? Colors.green[100] : Colors.white,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ).toList(),
+                    ],
+                  ),
+                ),
               if (ordersController.isBusinessSelected != '' && ordersController.isVendorsSelectedId != '' && ordersController.isNewAdd == true)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -388,8 +388,8 @@ class NewOrdersScreen extends StatelessWidget {
                               ),
                               Expanded(
                                 child: OrderAddressCard(
-                                  addressHeder: e["addressId"]["name"],
-                                  personName: e["addressId"]["person"] + "\t\t\t(${e["addressId"]["mobile"]})",
+                                  addressHeder: ordersController.order[0]["isActive"] ? e["addressId"]["name"].toString() : e["name"].toString(),
+                                  personName: ordersController.order[0]["isActive"] ? e["addressId"]["person"].toString() + "\t\t\t(${e["addressId"]["mobile"]})" : "(${e["mobile"]})",
                                   vendor: "vendor : ",
                                   vendorName: e["vendorOrderId"]["vendorId"]["name"],
                                   onTap: () {
@@ -423,6 +423,14 @@ class NewOrdersScreen extends StatelessWidget {
                     ordersController.onNewSelectedOrders();
                   },
                   text: "Selected location (${ordersController.selectedOrderTrueList.length})",
+                  height: 50.0,
+                ),
+              if (ordersController.isBusinessSelected != '' && ordersController.isVendorsSelectedId != '' && ordersController.isRouteSelected != "" && ordersController.isOpenOrder != false)
+                commonButton(
+                  onTap: () {
+                    ordersController.onNewAddSelectedOrders();
+                  },
+                  text: "Selected location (${ordersController.selectedNewAddOrderTrueList.length})",
                   height: 50.0,
                 ),
             ],
