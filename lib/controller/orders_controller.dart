@@ -324,7 +324,7 @@ class OrdersController extends GetxController {
         startDateVendor = "";
         endDateVendor = "";
         searchFilterName = "";
-        onOrdersApiCalling("");
+        // onOrdersApiCalling("");
         update();
       },
     );
@@ -673,7 +673,6 @@ class OrdersController extends GetxController {
     isRouteSelectedId = "";
     selectedOrderTrueList.clear();
     selectedNewAddOrderTrueList.clear();
-    addNewLocationDetailsInVendorStatusList.clear();
     update();
   }
 
@@ -1382,7 +1381,7 @@ class OrdersController extends GetxController {
 
   onSubmit() async {
     try {
-      var result = orderDataUpdate(selectedOrders);
+      var result = await orderDataUpdate(selectedOrders);
       if (result.IsSuccess) {
         vendorOrderUpdate();
       }
