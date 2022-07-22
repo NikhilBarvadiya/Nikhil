@@ -117,7 +117,7 @@ class NewSelectedOrdersScreen extends StatelessWidget {
                                 child: NewOrderCard(
                                   addressHeder: ordersController.isNewAdd ? e["addressId"]["name"].toString() : e["name"].toString(),
                                   personName: ordersController.isNewAdd ? e["addressId"]["person"].toString() + "\t\t\t(${e["addressId"]["mobile"]})" : e["person"].toString() + "\t\t\t(${e["mobile"]})",
-                                  vendorName: ordersController.isNewAdd ? e["vendorOrderId"]["vendorId"]["name"].toString() : "ShortNo : " + e["shortNo"].toString(),
+                                  vendorName: ordersController.isNewAdd ? "Vendor : " + e["vendorOrderId"]["vendorId"]["name"].toString() : "ShortNo : " + e["shortNo"].toString(),
                                   address: ordersController.isNewAdd ? e["addressId"]["address"].toString() : e["address"].toString(),
                                   onTap: () {
                                     ordersController.newRemoveToSelectedList(e);

@@ -96,7 +96,6 @@ class _NewOrderCardState extends State<NewOrderCard> {
               maxLines: 1,
               textScaleFactor: 1,
               text: TextSpan(
-                text: 'Vendor : ',
                 style: AppCss.h3.copyWith(color: Colors.black),
                 children: <TextSpan>[
                   TextSpan(

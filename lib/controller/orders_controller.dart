@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fw_manager/common/config.dart';
+import 'package:fw_manager/controller/multi_orders_controller.dart';
 import 'package:fw_manager/core/assets/index.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/model/api_data_class.dart';
@@ -39,6 +40,8 @@ class OrdersController extends GetxController {
   Set<Marker> markers = {};
   dynamic locationStatus;
   dynamic destinationIcon;
+  dynamic selectedOrders = [];
+  dynamic orderDetailsList = [];
 
   @override
   void onInit() {
@@ -161,11 +164,11 @@ class OrdersController extends GetxController {
     destinationIcon = await _getBytesFromAsset(imageAssets.destination, 130);
     location.onLocationChanged.listen((location) {
       sourceLocation = LatLng(location.latitude!, location.longitude!);
-      markers.forEach((element) {
+      for (var element in markers) {
         if (element.markerId == const MarkerId('pickup')) {
           setLocation(element.position);
         }
-      });
+      }
       getPolyPoint();
       update();
     });
@@ -184,11 +187,11 @@ class OrdersController extends GetxController {
       PointLatLng(destination.latitude, destination.longitude),
     );
     if (result.points.isNotEmpty) {
-      result.points.forEach(
-        (PointLatLng point) => _polylineCoordinates.add(
+      for (var point in result.points) {
+        _polylineCoordinates.add(
           LatLng(point.latitude, point.longitude),
-        ),
-      );
+        );
+      }
       polylineCoordinates = _polylineCoordinates;
       update();
       if (!isBounded) {
@@ -327,6 +330,7 @@ class OrdersController extends GetxController {
   }
 
   onDetailsTap(dynamic data) {
+    selectedOrders = data;
     Get.toNamed(AppRoutes.ordersDetailsScreen, arguments: data);
     update();
   }
@@ -354,7 +358,7 @@ class OrdersController extends GetxController {
     onBackDrop();
   }
 
-  void openEditDialog(dynamic data) {
+  void openEditDialog(dynamic data, index) {
     Get.dialog(
       AlertDialog(
         title: const Text('Edit orders details'),
@@ -493,6 +497,7 @@ class OrdersController extends GetxController {
     try {
       isLoading = true;
       update();
+      orderDetailsList = orderDetails;
       var request = {
         // "selectedOrder": {
         //   "_id": orderDetails["_id"],
@@ -632,6 +637,7 @@ class OrdersController extends GetxController {
   String isVendorsSelectedId = "";
   String isRouteSelectedId = "";
   String isRouteSelected = "";
+  int locationIndex = 0;
 
   onClearAll() {
     Get.defaultDialog(
@@ -1126,7 +1132,7 @@ class OrdersController extends GetxController {
     if (item != null) {
       var index = selectedNewAddOrderTrueList.indexOf(item);
       if (index == -1) {
-        selectedNewAddOrderTrueList.add(item);
+        addItem(item);
         update();
       }
       _autoNewAddSelector();
@@ -1195,6 +1201,49 @@ class OrdersController extends GetxController {
     update();
   }
 
+  addItem(address) {
+    int found = selectedNewAddOrderTrueList.where((element) => ["_id"] == address["_id"]).toList().length;
+    if (found == 0) {
+      selectedNewAddOrderTrueList.add({
+        "_id": address["_id"],
+        "name": address["name"],
+        "person": address["person"],
+        "flatFloorBuilding": address["flatFloorBuilding"],
+        "address": address["address"],
+        "areaId": address["routeId"]["areaId"]["_id"],
+        "nOfPackages": "1",
+        "routeId": address["routeId"],
+        "mobile": address["mobile"],
+        "shortNo": address["shortNo"],
+      });
+      getAllGlobalAddressByRouteList[getAllGlobalAddressByRouteList.indexOf(address)]["isAdded"] = true;
+    } else {
+      Get.rawSnackbar(
+        title: null,
+        messageText: const Text(
+          "Already Added!",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.green,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        margin: const EdgeInsets.all(0),
+      );
+    }
+    onChangeLP();
+  }
+
+  dynamic tLocations = 0;
+  dynamic tPackages = 0;
+  onChangeLP() {
+    tLocations = selectedNewAddOrderTrueList.length;
+    tPackages = 0;
+    for (var element in selectedNewAddOrderTrueList) {
+      var pack = element["nOfPackages"] == "" ? 0 : element["nOfPackages"];
+      tPackages = tPackages + num.parse(pack.toString());
+    }
+  }
+
   getVendorLastorder() async {
     try {
       isLoading = true;
@@ -1257,25 +1306,25 @@ class OrdersController extends GetxController {
     try {
       isLoading = true;
       update();
-      getVendorLastorder();
+      await getVendorLastorder();
       List orderData = [];
-      getVendorLastorderList.forEach((order) {
-        selectedNewAddOrderTrueList.forEach((element) {
+      for (var lastOrder in getVendorLastorderList) {
+        for (var element in selectedNewAddOrderTrueList) {
           dynamic data = {
-            "nOfPackages": element["nOfPackages"],
+            "nOfPackages": element["nOfPackages"], // not done
             "status": "running",
-            "addressId": element["_id"],
+            "addressId": element,
             "routeId": element["routeId"]["_id"],
             "areaId": element["areaId"],
-            "cash": num.parse(element["cash"].toString()),
-            "cashReceived": 0,
-            "vendorId": order[isVendorsSelected],
+            "cash": element["cash"] != "" ? 0 : element["cash"].toString(),
+            "cashReceived": element["cashReceived"] != "" ? 0 : element["cashReceived"].toString(),
+            "vendorOrderId": lastOrder["_id"],
             "businessCategoryId": isBusinessSelectedId,
             "orderType": order[0]['isActive'] == true ? 'b2b' : 'b2c',
           };
           orderData.add(data);
-        });
-      });
+        }
+      }
       APIDataClass response = await apis.call(
         apiMethods.addNewLocationDetailsInVendorStatus,
         orderData,
@@ -1326,159 +1375,206 @@ class OrdersController extends GetxController {
     update();
   }
 
-  dynamic finalOrderLocations = [];
-  onPendingProcced() {
+  List finalOrderLocations = [];
+  onPendingProcced() async {
     dynamic itemList = [];
-    print("Strating......");
-    addNewLocationDetailsInVendorStatusList.forEach(
-      (element) {
-        itemList = [];
-        if (element["isAdded"] != true) {
-          dynamic itemObject = {
-            "name": "${element["vendorOrderId"]?["vendorId"]?["name"]}_${element["nOfPackages"]}",
-            "quantity": element["nOfPackages"],
-            "weight": 100,
-            "weightType": 'GM',
-            "vendorData": {
-              "vendorId": element["vendorOrderId"]?["vendorId"]?["_id"],
-              "vendorOrderId": element["vendorOrderId"]?["_id"],
-              "itemId": element["_id"],
-              "addressId": element["addressId"]?["_id"],
-              "routeId": element["routeId"],
-              "cash": 0,
-              "cashReceive": 0,
+    await addNewLocationDetailsInVendorStatus();
+    for (var element in addNewLocationDetailsInVendorStatusList) {
+      itemList = [];
+      if (element["isAdded"] != true) {
+        dynamic itemObject = {
+          "name": "${element["vendorOrderId"]?["vendorId"]?["name"]}_${element["nOfPackages"]}", // not done
+          "quantity": element["nOfPackages"], //not done
+          "weight": 100,
+          "weightType": 'GM',
+          "vendorData": {
+            "vendorId": element["vendorOrderId"]?["vendorId"]?["_id"], //
+            "vendorOrderId": element["vendorOrderId"]?["_id"], //
+            "itemId": element["_id"],
+            "addressId": element["addressId"]["_id"],
+            "routeId": element["routeId"],
+            "cash": 0,
+            "cashReceive": 0,
+          }
+        };
+        itemList.add(itemObject);
+        for (var ele in addNewLocationDetailsInVendorStatusList) {
+          if (ele["addressId"] != null) {
+            if (ele["addressId"]["_id"] == ele["addressId"]["_id"] && ele["_id"] != ele["_id"]) {
+              dynamic boxes = ele["nOfBoxes"] != "" ? ele["nOfBoxes"] : 0;
+              dynamic itemObject2 = {
+                "name": "${element["vendorOrderId"]["vendorId"]["name"]}_${element["nOfPackages"] + boxes}",
+                "mobile": element["vendorOrderId"]["vendorId"]["mobile"],
+                "quantity": element["nOfPackages"] + boxes,
+                "loose": element["nOfPackages"],
+                "boxes": boxes,
+                "weight": 100,
+                "weightType": 'GM',
+                "vendorData": {
+                  "vendorId": element["vendorOrderId"]["vendorId"]["_id"],
+                  "vendorOrderId": element["vendorOrderId"]["_id"],
+                  "itemId": element["_id"],
+                  "addressId": element["addressId"]["_id"],
+                  "routeId": element["routeId"],
+                  "cash": element["cash"],
+                  "cashReceive": 0,
+                }
+              };
+              ele["isAdded"] = true;
+              itemList.add(itemObject2);
+              itemList = itemList.where((element, i) => element["vendorData"]["itemId"] == addNewLocationDetailsInVendorStatusList[i]["vendorData"]["itemId"]);
             }
-          };
-          itemList.add(itemObject);
-          addNewLocationDetailsInVendorStatusList.forEach(
-            (ele) {
-              if (ele["addressId"] != null) {
-                if (ele["addressId"]["_id"] == ele["addressId"]["_id"] && ele["_id"] != ele["_id"]) {
-                  dynamic boxes = ele["nOfBoxes"] != "" ? ele["nOfBoxes"] : 0;
-                  dynamic itemObject2 = {
-                    "name": "${element["vendorOrderId"]?["vendorId"]?["name"]}_${element["nOfPackages"] + boxes}",
-                    "mobile": element["vendorOrderId"]?["vendorId"]?["mobile"],
-                    "quantity": element["nOfPackages"] + boxes,
-                    "loose": element["nOfPackages"],
-                    "boxes": boxes,
-                    "weight": 100,
-                    "weightType": 'GM',
-                    "vendorData": {
-                      "vendorId": element["vendorOrderId"]?["vendorId"]?["_id"],
-                      "vendorOrderId": element["vendorOrderId"]?["_id"],
-                      "itemId": element["_id"],
-                      "addressId": element["addressId"]?["_id"],
-                      "routeId": element["routeId"],
-                      "cash": element["cash"],
-                      "cashReceive": 0,
-                    }
-                  };
-                  ele["isAdded"] = true;
-                  itemList.add(itemObject2);
-                  itemList = itemList.filter((v, i, a) => a.findIndex((v2) => v2["vendorData"]["itemId"] == v["vendorData"]["itemId"]) == i);
+          } else {
+            if (ele["name"] == element["name"] && num.parse(ele["latLong"].split(',')[0].trim()) == num.parse(element["latLong"].split(',')[0].trim()) && num.parse(ele["latLong"].split(',')[1].trim()) == num.parse(element["latLong"].split(',')[1].trim())) {
+              dynamic boxes = ele["nOfBoxes"] != "" ? ele["nOfBoxes"] : 0;
+              dynamic itemObject2 = {
+                "name": "${ele["vendorOrderId"]["vendorId"]["name"]}_${ele["nOfPackages"] + boxes}",
+                "mobile": ele["vendorOrderId"]["vendorId"]["mobile"],
+                "quantity": ele["nOfPackages"] + boxes,
+                "loose": ele["nOfPackages"],
+                "boxes": boxes,
+                "weight": 100,
+                "weightType": 'GM',
+                "vendorData": {
+                  "vendorId": ele["vendorOrderId"]["vendorId"]["_id"],
+                  "vendorOrderId": ele["vendorOrderId"]["_id"],
+                  "itemId": ele["_id"],
+                  "addressId": ele["addressId"]["_id"],
+                  "routeId": ele["routeId"],
+                  "cash": ele["cash"],
+                  "cashReceive": 0,
                 }
-              } else {
-                if (ele["name"] == element["name"] && num.parse(ele["latLong"].split(',')[0].trim()) == num.parse(element["latLong"].split(',')[0].trim()) && num.parse(ele["latLong"].split(',')[1].trim()) == num.parse(element["latLong"].split(',')[1].trim())) {
-                  dynamic boxes = ele["nOfBoxes"] != "" ? ele["nOfBoxes"] : 0;
-                  dynamic itemObject2 = {
-                    "name": "${ele.vendorOrderId?.vendorId?.name}_${ele.nOfPackages + boxes}",
-                    "mobile": ele["vendorOrderId"]?["vendorId"]?["mobile"],
-                    "quantity": ele["nOfPackages"] + boxes,
-                    "loose": ele["nOfPackages"],
-                    "boxes": boxes,
-                    "weight": 100,
-                    "weightType": 'GM',
-                    "vendorData": {
-                      "vendorId": ele["vendorOrderId"]?["vendorId"]?["_id"],
-                      "vendorOrderId": ele["vendorOrderId"]?["_id"],
-                      "itemId": ele["_id"],
-                      "addressId": ele["addressId"]?["_id"],
-                      "routeId": ele["routeId"],
-                      "cash": ele["cash"],
-                      "cashReceive": 0,
-                    }
-                  };
-                  ele["isAdded"] = true;
-                  itemList.push(itemObject2);
-                  itemList = itemList.filter((v, i, a) => a.findIndex((v2) => v2["vendorData"]["itemId"] == v["vendorData"]["itemId"]) == i);
-                }
-              }
-            },
-          );
-          dynamic location = {
-            "package": {
-              "contentList": [],
-              "images": [],
-              "laborCharges": 0,
-              "laborQty": 0,
-              "laborType": 'hr',
-              "isFragile": false,
-              "fragileCharges": 0,
-              "isInsurance": false,
-              "totalPackageCharges": 0,
-              "insuranceCharges": 0,
-              "payAtPickup": null,
-              "invoice": "",
-              "signature": null,
-              "invoiceSign": null,
-              "itemTotalWeight": itemList.map(element == element["weight"]).reduce((prev, curr) => prev + curr, 0),
-              "total": 0,
-              "anyNote": element["anyNote"] != "" ? element["anyNote"] : "Location by admin",
-              "itemList": itemList,
-            },
-            "type": selectedNewAddOrderTrueList.indexOf(element) == selectedNewAddOrderTrueList.length - 1 ? 'Drop' : 'Stop',
-            "instructionAudio": "",
-            "otp": "1234",
-            "isReached": false,
-            "reachedTime": null,
-            "packageType": null,
-            "location": element["addressId"] != null
-                ? {
-                    "name": element["addressId"]["name"],
-                    "address": element["addressId"]["address"],
-                    "lat": element["addressId"]["lat"],
-                    "lng": element["addressId"]["lng"],
-                    "flatFloorBuilding": element["addressId"]["flatFloorBuilding"],
-                    "person": element["addressId"]["person"],
-                    "mobile": element["addressId"]["mobile"],
-                  }
-                : {
-                    "name": element["name"],
-                    "address": element["address"],
-                    "flatFloorBuilding": '',
-                    "person": '',
-                    "lat": num.parse(element["latLong"].split(',')[0].trim()),
-                    "lng": num.parse(element["latLong"].split(',')[1].trim()),
-                    "mobile": element["mobile"],
-                  },
-            "dropPackage": [],
-          };
-          finalOrderLocations.add(location);
+              };
+              ele["isAdded"] = true;
+              itemList.push(itemObject2);
+              itemList = itemList.where((element, i) => element["vendorData"]["itemId"] == addNewLocationDetailsInVendorStatusList[i]["vendorData"]["itemId"]);
+            }
+          }
         }
-      },
-    );
-    dynamic forEachData = {
-      "ele": dynamic,
-      "i": dynamic,
-    };
-    selectedNewAddOrderTrueList.forEach((forEachData) {
-      if (forEachData["i"] == 0) {
+        dynamic location = {
+          "package": {
+            "contentList": [],
+            "images": [],
+            "laborCharges": 0,
+            "laborQty": 0,
+            "laborType": 'hr',
+            "isFragile": false,
+            "fragileCharges": 0,
+            "isInsurance": false,
+            "totalPackageCharges": 0,
+            "insuranceCharges": 0,
+            "payAtPickup": null,
+            "invoice": "",
+            "signature": null,
+            "invoiceSign": null,
+            "itemTotalWeight": itemList.map((element) => element["weight"]).reduce((prev, curr) => prev + curr),
+            "total": 0,
+            "anyNote": element["anyNote"] != "" ? element["anyNote"] : "Location by admin",
+            "itemList": itemList,
+          },
+          "type": selectedNewAddOrderTrueList.indexOf(element) == selectedNewAddOrderTrueList.length - 1 ? 'Drop' : 'Stop',
+          "instructionAudio": "",
+          "otp": "1234",
+          "isReached": false,
+          "reachedTime": null,
+          "packageType": null,
+          "location": element["addressId"] != null
+              ? {
+                  "name": element["addressId"]["name"],
+                  "address": element["addressId"]["address"],
+                  "lat": element["addressId"]["lat"],
+                  "lng": element["addressId"]["lng"],
+                  "flatFloorBuilding": element["addressId"]["flatFloorBuilding"],
+                  "person": element["addressId"]["person"],
+                  "mobile": element["addressId"]["mobile"],
+                }
+              : {
+                  "name": element["name"],
+                  "address": element["address"],
+                  "flatFloorBuilding": '',
+                  "person": '',
+                  "lat": num.parse(element["latLong"].split(',')[0].trim()),
+                  "lng": num.parse(element["latLong"].split(',')[1].trim()),
+                  "mobile": element["mobile"],
+                },
+          "dropPackage": [],
+        };
+        finalOrderLocations.add(location);
+      }
+    }
+    for (int i = 0; i < selectedOrders["locations"].length; i++) {
+      if (i == 0) {
         itemList.forEach((item) {
-          forEachData["ele"]["package"]["itemList"].splice(forEachData["ele"]["package"]["itemList"].length, 0, item);
+          selectedOrders["locations"][i]["package"]["itemList"].insert(
+            selectedOrders["locations"][i]["package"]["itemList"].length,
+            item,
+          );
         });
-        if (forEachData["i"] == selectedNewAddOrderTrueList.indexOf(0) && forEachData["ele"]["type"] == 'Drop') {
-          forEachData["ele"]["type"] = 'Stop';
+        if (i == locationIndex && selectedOrders["locations"][i]["type"] == "Drop") {
+          selectedOrders["locations"][i]["type"] = "Stop";
         }
       }
-    });
-    finalOrderLocations.forEach(
-      (ele, index) => {
-        selectedNewAddOrderTrueList.insert(
-          selectedNewAddOrderTrueList.indexOf(index) + 1,
-          // 0,
-          finalOrderLocations[finalOrderLocations.length - 1 - index],
-        ),
-      },
-    );
+    }
+    for (int index = 0; index < finalOrderLocations.length; index++) {
+      selectedOrders["locations"].insert(
+        locationIndex + 1,
+        finalOrderLocations[finalOrderLocations.length - 1 - index],
+      );
+    }
+  }
+
+  onSubmit() async {
+    try {
+      var result = await orderDetailsList;
+      if (result.IsSuccess) {
+        vendorOrderUpdate();
+      }
+    } catch (err) {
+      return err;
+    }
+  }
+
+  vendorOrderUpdate() async {
+    try {
+      var result = await MultiOrdersController().saveOrders();
+      if (result.IsSuccess) {
+        Get.snackbar(
+          'Locations Added Successful',
+          'success',
+        );
+      }
+    } catch (err) {
+      return err;
+    }
+  }
+
+  resetAll() {
+    tLocations = 0;
+    tPackages = 0;
+    selectedNewAddOrderTrueList = [];
+    // getAllGlobalAddressByRouteList.where((element) {
+    //   return element["isAdded"] == true ? element["isAdded"] = null : null;
+    // });
+    isRouteSelected = "";
+    isRouteSelectedId = "";
+    getAllGlobalAddressByRouteList = [];
+    vendorOrderMergeByBusinessCategoryIdList = [];
+    fetchVendorByBusinessCategoryList = [];
+  }
+
+  placeInOrder() async {
+    try {
+      isLoading = true;
+      if (filters[0]["label"] == "New") {
+        await addNewLocationDetailsInVendorStatus();
+        await onSubmit();
+      } else {
+        await onSubmit();
+      }
+      resetAll();
+      isLoading = false;
+    } catch (err) {
+      return err;
+    }
   }
 }

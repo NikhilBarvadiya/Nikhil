@@ -9,13 +9,6 @@ class EditOrdersController extends GetxController {
   bool isLoading = false;
   dynamic editArguments;
 
-  @override
-  void onInit() {
-    // editArguments = Get.arguments;
-    // orderDataUpdate();
-    super.onInit();
-  }
-
   orderDataUpdate() async {
     try {
       isLoading = true;

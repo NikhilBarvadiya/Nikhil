@@ -145,7 +145,10 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
                                     isRequestStatus: data["requestStatus"] == "Accepted" ? true : false,
                                     isEditable: ordersController.isdragDrop == false ? false : true,
                                     editClick: () {
-                                      ordersController.openEditDialog(data);
+                                      ordersController.openEditDialog(
+                                        data,
+                                        ordersController.locationIndex = index,
+                                      );
                                     },
                                     address: data["locations"][index]["location"]["address"].toString().toUpperCase().capitalizeFirst,
                                     otp: data["locations"][index]["otp"],
