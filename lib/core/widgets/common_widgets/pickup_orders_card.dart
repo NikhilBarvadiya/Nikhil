@@ -260,7 +260,7 @@ class _PickupOrdersCardState extends State<PickupOrdersCard> {
                   style: AppCss.h3.copyWith(fontSize: 15),
                 ).paddingOnly(right: 2),
                 const Spacer(),
-                if (widget.header != "Pickup")
+                if (widget.header != "Pickup" && widget.header != "Drop")
                   if (widget.isRequestStatus == true)
                     if (widget.isEditable == null || widget.isEditable == true)
                       GestureDetector(

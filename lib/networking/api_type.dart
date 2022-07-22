@@ -41,17 +41,13 @@ class ApiMethods {
   final String updateVendorPackageDetails = "manager/updateVendorPackageDetails";
 
   // Order Apis.......//
-  final String orderDataUpdate = "manager/orderDataUpdate"; //ok
-  final String vendorOrderMergeByBusinessCategoryId = "manager/vendorOrderMergeByBusinessCategoryId"; // pending vendor seletion "vendorId","orderType","BisnessId....."ok
-  final String getRoutesDetails = "manager/getRoutesDetails"; //new add use..... ok
-  final String getAllGlobalAddressByRoute = "manager/getAllGlobalAddressByRoute"; // new add orderdetails........ok
-
-  //selection data vendor add ....   json add order add.....
-  //vendor selection
+  final String orderDataUpdate = "manager/orderDataUpdate";
+  final String vendorOrderMergeByBusinessCategoryId = "manager/vendorOrderMergeByBusinessCategoryId";
+  final String getRoutesDetails = "manager/getRoutesDetails";
+  final String getAllGlobalAddressByRoute = "manager/getAllGlobalAddressByRoute";
+  final String addNewLocationDetailsInVendorStatus = "manager/addNewLocationDetailsInVendorStatus";
+  final String getVendorLastorder = "manager/getVendorLastOrderDetails";
   final String shiftVendorOrderLocationsToPending = "manager/shiftVendorOrderLocationsToPending";
-
-  final String addNewLocationDetailsInVendorStatus = "manager/addNewLocationDetailsInVendorStatus"; // "vendorId","orderType","BisnessId....."  new add use.....
-  final String getVendorLastorder = "manager/getVendorLastOrderDetails"; // "vendorId","orderType",""  new add use.....
 
   // COD Settlement Apis.......//
   final String vCodSettlementgetDetails = "manager/vCodSettlement/getDetails";

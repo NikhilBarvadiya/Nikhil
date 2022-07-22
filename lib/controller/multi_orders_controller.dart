@@ -629,7 +629,6 @@ class MultiOrdersController extends GetxController {
         },
         ApiType.post,
       );
-
       if (resData.isSuccess == true && resData.data != 0) {
         var updateData = await apis.call(
           ApiMethods().updateVendorOrders,

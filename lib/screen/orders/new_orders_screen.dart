@@ -21,7 +21,7 @@ class NewOrdersScreen extends StatelessWidget {
     return GetBuilder<OrdersController>(
       builder: (_) => WillPopScope(
         onWillPop: () async {
-          return ordersController.isSlider;
+          return ordersController.onWillPopScopeNewOrders();
         },
         child: Scaffold(
           appBar: AppBar(
@@ -34,16 +34,17 @@ class NewOrdersScreen extends StatelessWidget {
               icon: const Icon(Icons.arrow_back_outlined),
             ),
             actions: [
-              if (ordersController.selectedOrderTrueList.isEmpty && ordersController.selectedNewAddOrderTrueList.isEmpty)
-                MaterialButton(
-                  onPressed: () => ordersController.onNewAdd(),
-                  child: const Text(
-                    "NEW ADD",
-                    style: TextStyle(
-                      color: Colors.white,
+              if (ordersController.isNewAdd)
+                if (ordersController.selectedOrderTrueList.isEmpty && ordersController.selectedNewAddOrderTrueList.isEmpty)
+                  MaterialButton(
+                    onPressed: () => ordersController.onNewAdd(),
+                    child: const Text(
+                      "NEW ADD",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
             ],
           ),
           body: Column(

@@ -324,6 +324,7 @@ class OrdersController extends GetxController {
         startDateVendor = "";
         endDateVendor = "";
         searchFilterName = "";
+        onOrdersApiCalling("");
         update();
       },
     );
@@ -355,7 +356,12 @@ class OrdersController extends GetxController {
   }
 
   onWillPopScope() {
+    onBack();
     onBackDrop();
+  }
+
+  onWillPopScopeNewOrders() {
+    isNewAdd ? onOrderBack() : onRepair();
   }
 
   void openEditDialog(dynamic data, index) {
@@ -399,8 +405,10 @@ class OrdersController extends GetxController {
           ListTile(
             title: const Text("Delete"),
             onTap: () async {
-              // await shiftVendorOrderLocationsToPending();
               Get.back();
+              await shiftVendorOrderLocationsToPending(data["_id"]);
+              data["locations"].removeAt(index);
+              await orderDataUpdate(data);
               update();
             },
           ),
@@ -498,13 +506,7 @@ class OrdersController extends GetxController {
       isLoading = true;
       update();
       orderDetailsList = orderDetails;
-      var request = {
-        // "selectedOrder": {
-        //   "_id": orderDetails["_id"],
-        //   "locations": orderDetails["locations"],
-        // },
-        "selectedOrder": orderDetails
-      };
+      var request = {"selectedOrder": orderDetails};
       APIDataClass response = await apis.call(
         apiMethods.orderDataUpdate,
         request,
@@ -512,31 +514,6 @@ class OrdersController extends GetxController {
       );
       if (response.isSuccess && response.data != 0) {
         orderDetails = response.data;
-        isdragDrop = true;
-        update();
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      } else {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.black),
-          ),
-          backgroundColor: Colors.amber,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
       }
     } catch (e) {
       Get.rawSnackbar(
@@ -558,43 +535,19 @@ class OrdersController extends GetxController {
     }
   }
 
-  shiftVendorOrderLocationsToPending() async {
+  shiftVendorOrderLocationsToPending(vendorOrderStatusIds) async {
     try {
       isLoading = true;
       update();
       var request = {
-        "vendorOrderStatusIds": {},
+        "vendorOrderStatusIds": vendorOrderStatusIds,
       };
       APIDataClass response = await apis.call(
         apiMethods.shiftVendorOrderLocationsToPending,
         request,
         ApiType.post,
       );
-      if (response.isSuccess && response.data != 0) {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      } else {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.black),
-          ),
-          backgroundColor: Colors.amber,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      }
+      if (response.isSuccess && response.data != 0) {}
     } catch (e) {
       Get.rawSnackbar(
         title: null,
@@ -720,6 +673,7 @@ class OrdersController extends GetxController {
     isRouteSelectedId = "";
     selectedOrderTrueList.clear();
     selectedNewAddOrderTrueList.clear();
+    addNewLocationDetailsInVendorStatusList.clear();
     update();
   }
 
@@ -881,29 +835,6 @@ class OrdersController extends GetxController {
       );
       if (response.isSuccess && response.data != 0) {
         vendorOrderMergeByBusinessCategoryIdList = response.data;
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      } else {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.black),
-          ),
-          backgroundColor: Colors.amber,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
       }
     } catch (e) {
       Get.rawSnackbar(
@@ -1028,29 +959,6 @@ class OrdersController extends GetxController {
       );
       if (response.isSuccess && response.data != 0) {
         getRoutesDetailsList = response.data;
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      } else {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.black),
-          ),
-          backgroundColor: Colors.amber,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
       }
     } catch (e) {
       Get.rawSnackbar(
@@ -1085,29 +993,6 @@ class OrdersController extends GetxController {
       );
       if (response.isSuccess && response.data != 0) {
         getAllGlobalAddressByRouteList = response.data;
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      } else {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.black),
-          ),
-          backgroundColor: Colors.amber,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
       }
     } catch (e) {
       Get.rawSnackbar(
@@ -1235,6 +1120,7 @@ class OrdersController extends GetxController {
 
   dynamic tLocations = 0;
   dynamic tPackages = 0;
+
   onChangeLP() {
     tLocations = selectedNewAddOrderTrueList.length;
     tPackages = 0;
@@ -1259,29 +1145,6 @@ class OrdersController extends GetxController {
       );
       if (response.isSuccess && response.data != 0) {
         getVendorLastorderList = response.data;
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      } else {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.black),
-          ),
-          backgroundColor: Colors.amber,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
       }
     } catch (e) {
       Get.rawSnackbar(
@@ -1306,12 +1169,13 @@ class OrdersController extends GetxController {
     try {
       isLoading = true;
       update();
+      addNewLocationDetailsInVendorStatusList = [];
       await getVendorLastorder();
       List orderData = [];
       for (var lastOrder in getVendorLastorderList) {
         for (var element in selectedNewAddOrderTrueList) {
           dynamic data = {
-            "nOfPackages": element["nOfPackages"], // not done
+            "nOfPackages": element["nOfPackages"],
             "status": "running",
             "addressId": element,
             "routeId": element["routeId"]["_id"],
@@ -1332,29 +1196,20 @@ class OrdersController extends GetxController {
       );
       if (response.isSuccess && response.data != 0) {
         addNewLocationDetailsInVendorStatusList = response.data;
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
-      } else {
-        Get.rawSnackbar(
-          title: null,
-          messageText: Text(
-            response.message!,
-            style: const TextStyle(color: Colors.black),
-          ),
-          backgroundColor: Colors.amber,
-          snackPosition: SnackPosition.TOP,
-          borderRadius: 0,
-          margin: const EdgeInsets.all(0),
-        );
+        isSlider = false;
+        isOpenTap = false;
+        isOpenOrder = false;
+        isNewOrder = false;
+        isNewAdd = true;
+        isBusinessSelected = "";
+        isBusinessSelectedId = "";
+        isVendorsSelected = "";
+        isVendorsSelectedId = "";
+        isRouteSelected = "";
+        isRouteSelectedId = "";
+        onChangeOrder(0);
+        Get.offNamedUntil(AppRoutes.home, (Route<dynamic> route) => true);
+        update();
       }
     } catch (e) {
       Get.rawSnackbar(
@@ -1376,6 +1231,7 @@ class OrdersController extends GetxController {
   }
 
   List finalOrderLocations = [];
+
   onPendingProcced() async {
     dynamic itemList = [];
     await addNewLocationDetailsInVendorStatus();
@@ -1383,13 +1239,13 @@ class OrdersController extends GetxController {
       itemList = [];
       if (element["isAdded"] != true) {
         dynamic itemObject = {
-          "name": "${element["vendorOrderId"]?["vendorId"]?["name"]}_${element["nOfPackages"]}", // not done
-          "quantity": element["nOfPackages"], //not done
+          "name": "${element["vendorOrderId"]?["vendorId"]?["name"]}_${element["nOfPackages"]}",
+          "quantity": element["nOfPackages"],
           "weight": 100,
           "weightType": 'GM',
           "vendorData": {
-            "vendorId": element["vendorOrderId"]?["vendorId"]?["_id"], //
-            "vendorOrderId": element["vendorOrderId"]?["_id"], //
+            "vendorId": element["vendorOrderId"]?["vendorId"]?["_id"],
+            "vendorOrderId": element["vendorOrderId"]?["_id"],
             "itemId": element["_id"],
             "addressId": element["addressId"]["_id"],
             "routeId": element["routeId"],
@@ -1521,11 +1377,12 @@ class OrdersController extends GetxController {
         finalOrderLocations[finalOrderLocations.length - 1 - index],
       );
     }
+    onSubmit();
   }
 
   onSubmit() async {
     try {
-      var result = await orderDetailsList;
+      var result = orderDataUpdate(selectedOrders);
       if (result.IsSuccess) {
         vendorOrderUpdate();
       }
@@ -1552,23 +1409,20 @@ class OrdersController extends GetxController {
     tLocations = 0;
     tPackages = 0;
     selectedNewAddOrderTrueList = [];
-    // getAllGlobalAddressByRouteList.where((element) {
-    //   return element["isAdded"] == true ? element["isAdded"] = null : null;
-    // });
+    selectedOrderTrueList = [];
     isRouteSelected = "";
     isRouteSelectedId = "";
-    getAllGlobalAddressByRouteList = [];
-    vendorOrderMergeByBusinessCategoryIdList = [];
-    fetchVendorByBusinessCategoryList = [];
   }
 
   placeInOrder() async {
     try {
       isLoading = true;
-      if (filters[0]["label"] == "New") {
+      if (isNewAdd = true) {
         await addNewLocationDetailsInVendorStatus();
+        onPendingProcced();
         await onSubmit();
       } else {
+        onPendingProcced();
         await onSubmit();
       }
       resetAll();
