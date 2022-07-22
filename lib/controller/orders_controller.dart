@@ -324,7 +324,7 @@ class OrdersController extends GetxController {
         startDateVendor = "";
         endDateVendor = "";
         searchFilterName = "";
-        // onOrdersApiCalling("");
+        onOrdersApiCalling("");
         update();
       },
     );
@@ -404,12 +404,30 @@ class OrdersController extends GetxController {
           ),
           ListTile(
             title: const Text("Delete"),
-            onTap: () async {
+            onTap: () {
               Get.back();
-              await shiftVendorOrderLocationsToPending(data["_id"]);
-              data["locations"].removeAt(index);
-              await orderDataUpdate(data);
-              update();
+              Get.defaultDialog(
+                radius: 4,
+                title: "",
+                content: const Text(
+                  "Do you really want to delete this location?",
+                  textAlign: TextAlign.center,
+                ),
+                confirm: TextButton(
+                  onPressed: () async {
+                    Get.back();
+                    await shiftVendorOrderLocationsToPending(selectedOrders["_id"], index);
+                    update();
+                  },
+                  child: const Text("Yes"),
+                ),
+                cancel: TextButton(
+                  onPressed: () {
+                    Get.back();
+                  },
+                  child: const Text("No"),
+                ),
+              );
             },
           ),
         ],
@@ -514,6 +532,7 @@ class OrdersController extends GetxController {
       );
       if (response.isSuccess && response.data != 0) {
         orderDetails = response.data;
+        update();
       }
     } catch (e) {
       Get.rawSnackbar(
@@ -535,7 +554,7 @@ class OrdersController extends GetxController {
     }
   }
 
-  shiftVendorOrderLocationsToPending(vendorOrderStatusIds) async {
+  shiftVendorOrderLocationsToPending(vendorOrderStatusIds, index) async {
     try {
       isLoading = true;
       update();
@@ -547,7 +566,10 @@ class OrdersController extends GetxController {
         request,
         ApiType.post,
       );
-      if (response.isSuccess && response.data != 0) {}
+      if (response.isSuccess && response.data != 0) {
+        selectedOrders["locations"].removeAt(index);
+        await orderDataUpdate(selectedOrders);
+      }
     } catch (e) {
       Get.rawSnackbar(
         title: null,
@@ -1408,7 +1430,7 @@ class OrdersController extends GetxController {
     tLocations = 0;
     tPackages = 0;
     selectedNewAddOrderTrueList = [];
-    selectedOrderTrueList = [];
+    addNewLocationDetailsInVendorStatusList = [];
     isRouteSelected = "";
     isRouteSelectedId = "";
   }
