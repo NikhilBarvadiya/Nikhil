@@ -11,7 +11,6 @@ import 'package:fw_manager/controller/return_settlement_controller.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
 import 'package:fw_manager/core/utilities/storage_utils.dart';
 import 'package:fw_manager/screen/multi_order/multi_orders_screen.dart';
-import 'package:fw_manager/screen/settlement/cod_settlement/cod_settlement_screen.dart';
 import 'package:fw_manager/screen/settlement/cod_settlement/cod_settlement_view_screen.dart';
 import 'package:fw_manager/screen/orders/orders_screen.dart';
 import 'package:fw_manager/screen/settlement/return_settlement/return_settlement_screen.dart';
@@ -49,11 +48,11 @@ class HomeController extends GetxController {
       "icon": FontAwesomeIcons.rightLeft,
       "screen": const ReturnSettlementScreen(),
     },
-    {
-      "pageName": "COD Settlement",
-      "icon": FontAwesomeIcons.fileInvoiceDollar,
-      "screen": const CodSettlementScreen(),
-    },
+    // {
+    //   "pageName": "COD Settlement",
+    //   "icon": FontAwesomeIcons.fileInvoiceDollar,
+    //   "screen": const CodSettlementScreen(),
+    // },
     {
       "pageName": "COD Settlement View",
       "icon": FontAwesomeIcons.sackDollar,

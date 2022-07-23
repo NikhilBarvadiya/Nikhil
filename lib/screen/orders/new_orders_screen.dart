@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 class NewOrdersScreen extends StatelessWidget {
   NewOrdersScreen({Key? key}) : super(key: key);
   OrdersController ordersController = Get.put(OrdersController());
+
   final CommonController _commonController = Get.find();
 
   @override
@@ -28,7 +29,7 @@ class NewOrdersScreen extends StatelessWidget {
             elevation: 1,
             foregroundColor: Colors.white,
             backgroundColor: ordersController.isNewAdd ? Theme.of(context).primaryColor : Colors.orange,
-            title: Text(ordersController.isNewAdd ? "Pendding orders" : "Add orders"),
+            title: Text(ordersController.isNewAdd ? "Pending orders" : "Add location"),
             leading: IconButton(
               onPressed: () => ordersController.isNewAdd ? ordersController.onOrderBack() : ordersController.onRepair(),
               icon: const Icon(Icons.arrow_back_outlined),
@@ -39,7 +40,7 @@ class NewOrdersScreen extends StatelessWidget {
                   MaterialButton(
                     onPressed: () => ordersController.onNewAdd(),
                     child: const Text(
-                      "NEW ADD",
+                      "ADD LOCATION",
                       style: TextStyle(
                         color: Colors.white,
                       ),
@@ -325,7 +326,9 @@ class NewOrdersScreen extends StatelessWidget {
                                   vendor: "Address : ",
                                   vendorName: ordersController.isNewAdd ? e["vendorId"]["name"] : e["address"],
                                   onTap: () {
-                                    ordersController.newAddToSelectedList(e);
+                                    if (e['selected'] == null || e['selected'] == false) {
+                                      ordersController.newAddToSelectedList(e);
+                                    }
                                   },
                                   deleteIcon: e['selected'] == null
                                       ? Icons.add

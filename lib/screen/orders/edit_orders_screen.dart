@@ -1,7 +1,6 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:fw_manager/controller/edit_orders_controller.dart';
 import 'package:fw_manager/controller/orders_controller.dart';
 import 'package:fw_manager/core/widgets/common_bottom_sheet/common_bottom_sheet.dart';
 import 'package:fw_manager/core/widgets/common_widgets/common_button.dart';
@@ -9,7 +8,7 @@ import 'package:fw_manager/core/widgets/common_widgets/searchable_list.dart';
 import 'package:get/get.dart';
 
 class EditOrdersScreen extends StatelessWidget {
-  EditOrdersController editOrdersController = Get.put(EditOrdersController());
+  OrdersController ordersController = Get.put(OrdersController());
 
   EditOrdersScreen({Key? key}) : super(key: key);
 
@@ -18,7 +17,7 @@ class EditOrdersScreen extends StatelessWidget {
     return GetBuilder<OrdersController>(
       builder: (_) => WillPopScope(
         onWillPop: () async {
-          return editOrdersController.isSlider;
+          return ordersController.isSlider;
         },
         child: Scaffold(
           appBar: AppBar(

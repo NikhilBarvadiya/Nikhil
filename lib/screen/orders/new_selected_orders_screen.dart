@@ -87,7 +87,7 @@ class NewSelectedOrdersScreen extends StatelessWidget {
                 ),
               if (ordersController.selectedOrderTrueList.isNotEmpty)
                 commonButton(
-                  onTap: () {},
+                  onTap: () => ordersController.placeInOrderPending(),
                   text: "Proceed",
                   height: 50.0,
                 ),
@@ -133,12 +133,12 @@ class NewSelectedOrdersScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-              if (ordersController.selectedNewAddOrderTrueList.isNotEmpty)
-                commonButton(
-                  onTap: () => ordersController.onPendingProcced(),
-                  text: "Proceed",
-                  height: 50.0,
-                ),
+              commonButton(
+                // onTap: () => ordersController.onPendingProcced(),
+                onTap: () => ordersController.placeInOrder(),
+                text: "Proceed",
+                height: 50.0,
+              ),
             ],
           ),
         ),

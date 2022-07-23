@@ -6,21 +6,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fw_manager/common/config.dart';
+import 'package:fw_manager/controller/home_controller.dart';
 import 'package:fw_manager/controller/multi_orders_controller.dart';
 import 'package:fw_manager/core/assets/index.dart';
 import 'package:fw_manager/core/configuration/app_routes.dart';
+import 'package:fw_manager/core/theme/index.dart';
 import 'package:fw_manager/model/api_data_class.dart';
 import 'package:fw_manager/networking/index.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:location/location.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:fw_manager/core/theme/app_css.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OrdersController extends GetxController {
   String selectedFilter = "Pending";
   TextEditingController txtSearchController = TextEditingController();
+  HomeController homeController = Get.put(HomeController());
   bool isdragDrop = true;
   bool ordersFilter = true;
   bool start = true;
@@ -324,6 +326,7 @@ class OrdersController extends GetxController {
         startDateVendor = "";
         endDateVendor = "";
         searchFilterName = "";
+        selectedOrders = [];
         onOrdersApiCalling("");
         update();
       },
@@ -332,7 +335,9 @@ class OrdersController extends GetxController {
 
   onDetailsTap(dynamic data) {
     selectedOrders = data;
-    Get.toNamed(AppRoutes.ordersDetailsScreen, arguments: data);
+    Get.toNamed(AppRoutes.ordersDetailsScreen, arguments: data)!.then((value) {
+      onOrdersApiCalling("");
+    });
     update();
   }
 
@@ -344,8 +349,8 @@ class OrdersController extends GetxController {
   onBack() {
     if (isdragDrop == true) {
       Get.back();
+      update();
     }
-    update();
   }
 
   onBackDrop() {
@@ -364,7 +369,7 @@ class OrdersController extends GetxController {
     isNewAdd ? onOrderBack() : onRepair();
   }
 
-  void openEditDialog(dynamic data, index) {
+  openEditDialog(dynamic data, index) {
     Get.dialog(
       AlertDialog(
         title: const Text('Edit orders details'),
@@ -397,7 +402,6 @@ class OrdersController extends GetxController {
           ListTile(
             title: const Text("Add New"),
             onTap: () async {
-              Get.back();
               Get.toNamed(AppRoutes.newOrdersScreen);
               update();
             },
@@ -569,6 +573,8 @@ class OrdersController extends GetxController {
       if (response.isSuccess && response.data != 0) {
         selectedOrders["locations"].removeAt(index);
         await orderDataUpdate(selectedOrders);
+        await onOrdersApiCalling("");
+        update();
       }
     } catch (e) {
       Get.rawSnackbar(
@@ -695,6 +701,7 @@ class OrdersController extends GetxController {
     isRouteSelectedId = "";
     selectedOrderTrueList.clear();
     selectedNewAddOrderTrueList.clear();
+    getAllGlobalAddressByRouteList.clear();
     update();
   }
 
@@ -704,10 +711,9 @@ class OrdersController extends GetxController {
     } else {
       if (isBusinessSelected != "" && isBusinessSelectedId != "" && isVendorsSelected != "" && isVendorsSelectedId != "") {
         onClear();
-        selectedOrderTrueList.clear();
-        selectedNewAddOrderTrueList.clear();
         isNewAdd = true;
         isOpenOrder = false;
+        update();
       } else {
         isNewAdd = true;
         selectedOrderTrueList.clear();
@@ -949,7 +955,7 @@ class OrdersController extends GetxController {
     }
   }
 
-  ///Add New ApiCalling.......///
+  /// Add New ApiCalling.......///
 
   onRouteSelected(String id, String name) async {
     isRouteSelectedId = id;
@@ -1229,7 +1235,7 @@ class OrdersController extends GetxController {
         isRouteSelected = "";
         isRouteSelectedId = "";
         onChangeOrder(0);
-        Get.offNamedUntil(AppRoutes.home, (Route<dynamic> route) => true);
+        Get.offNamed(AppRoutes.home);
         update();
       }
     } catch (e) {
@@ -1255,7 +1261,6 @@ class OrdersController extends GetxController {
 
   onPendingProcced() async {
     dynamic itemList = [];
-    await addNewLocationDetailsInVendorStatus();
     for (var element in addNewLocationDetailsInVendorStatusList) {
       itemList = [];
       if (element["isAdded"] != true) {
@@ -1398,14 +1403,14 @@ class OrdersController extends GetxController {
         finalOrderLocations[finalOrderLocations.length - 1 - index],
       );
     }
-    onSubmit();
   }
 
   onSubmit() async {
     try {
       var result = await orderDataUpdate(selectedOrders);
+      update();
       if (result.IsSuccess) {
-        vendorOrderUpdate();
+        update();
       }
     } catch (err) {
       return err;
@@ -1414,7 +1419,9 @@ class OrdersController extends GetxController {
 
   vendorOrderUpdate() async {
     try {
-      var result = await MultiOrdersController().saveOrders();
+      final MultiOrdersController multiOrdersController = Get.find();
+      var result = await multiOrdersController.saveOrders();
+      multiOrdersController.update();
       if (result.IsSuccess) {
         Get.snackbar(
           'Locations Added Successful',
@@ -1427,27 +1434,41 @@ class OrdersController extends GetxController {
   }
 
   resetAll() {
-    tLocations = 0;
-    tPackages = 0;
-    selectedNewAddOrderTrueList = [];
-    addNewLocationDetailsInVendorStatusList = [];
-    isRouteSelected = "";
-    isRouteSelectedId = "";
+    Get.offNamed(AppRoutes.home);
   }
 
   placeInOrder() async {
     try {
-      isLoading = true;
-      if (isNewAdd = true) {
-        await addNewLocationDetailsInVendorStatus();
-        onPendingProcced();
-        await onSubmit();
-      } else {
-        onPendingProcced();
-        await onSubmit();
-      }
+      await addNewLocationDetailsInVendorStatus();
+      onPendingProcced();
+      print(selectedOrders['locations'].length);
+      // await onSubmit();
       resetAll();
-      isLoading = false;
+      update();
+    } catch (err) {
+      return err;
+    }
+  }
+
+  placeInOrderPending() async {
+    try {
+      isSlider = false;
+      isOpenTap = false;
+      isOpenOrder = false;
+      isNewOrder = false;
+      isNewAdd = true;
+      isBusinessSelected = "";
+      isBusinessSelectedId = "";
+      isVendorsSelected = "";
+      isVendorsSelectedId = "";
+      isRouteSelected = "";
+      isRouteSelectedId = "";
+      onChangeOrder(0);
+      Get.offNamed(AppRoutes.home);
+      onPendingProcced();
+      await onSubmit();
+      resetAll();
+      update();
     } catch (err) {
       return err;
     }
